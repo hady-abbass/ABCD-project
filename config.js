@@ -8,7 +8,7 @@ const CONFIG = {
     // Option A (quick test): put your Gemini key in apiKey and keep this Gemini endpoint.
     // Option B (public site, recommended): put your Worker URL in endpoint and set apiKey to "".
     endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    apiKey: "AQ.Ab8RN6JEPbqkCITylc6bOGcG5ubAvh_mbMXAvK0g8nIEkMEr2Q",
+    apiKey: "AQ.Ab8RN6ISMw6CMe0h4sR-CYF4CdVnEd5OSth7tuTbM-QKx2l-RQ",
     model: "gemini-2.5-flash",
     maxTokens: 500,
     temperature: 0.3
