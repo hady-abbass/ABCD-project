@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>مدرب ABCDE للفرز الطارئ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#ffffff"/><path d="M19 6h10v11h11v10H29v11H19V27H8V17h11z" fill="#0066CC"/><path d="M4 42h10l3-5 4 9 4-7 3 3h16" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="siteTitle"></span>
+    </div>
+    <nav>
+      <a href="#home" data-i18n="navHome"></a>
+      <a href="#library" data-i18n="navLib"></a>
+      <button type="button" id="lang-toggle" class="btn btn-outline" data-i18n="langBtn"></button>
+      <button type="button" id="theme-toggle" class="btn btn-outline"></button>
+    </nav>
+  </header>
+
+  <main id="app" class="container" tabindex="-1"></main>
+
+  <!-- Always visible emergency button -->
+  <a id="sos" class="sos-fab" href="tel:123"><span data-i18n="sosBtn"></span> <bdi id="sos-num"></bdi></a>
+
+  <footer class="site-footer">
+    <p><strong data-i18n="footerLabel"></strong> <span data-i18n="footerText"></span> <span id="emergency-number"></span></p>
+    <p data-i18n="footerSources"></p>
+  </footer>
+
+  <!-- Load order matters: config first, then the files that use it. -->
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="scenarios.js"></script>
+  <script src="ai-feedback.js"></script>
+  <script src="assistant.js"></script>
+  <script src="library.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
