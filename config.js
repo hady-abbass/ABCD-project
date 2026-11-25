@@ -1,16 +1,11 @@
-// config.js: the only file you need to edit for settings.
 const CONFIG = {
-  // Your local emergency number. It is shown on every page.
-  emergencyNumber: "[your local emergency number]",
-
+  emergencyNumber: "123",
   ai: {
     enabled: true,
-    // Option A (quick test): put your Gemini key in apiKey and keep this Gemini endpoint.
-    // Option B (public site, recommended): put your Worker URL in endpoint and set apiKey to "".
-    endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    apiKey: "AQ.Ab8RN6ISMw6CMe0h4sR-CYF4CdVnEd5OSth7tuTbM-QKx2l-RQ",
-    model: "gemini-2.5-flash",
-    maxTokens: 500,
+    endpoint: "https://firstaid-ai.hadyy-abbas11.workers.dev",
+    apiKey: "",
+    model: "llama",
+    maxTokens: 1500,
     temperature: 0.3
   }
 };
