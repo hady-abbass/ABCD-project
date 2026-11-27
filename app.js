@@ -118,7 +118,7 @@ function safeT(key) {
   const lang = safeGetLang();
   if (typeof t === "function") {
     const val = t(key, lang);
-    if (typeof val === "string" && val.trim()) {
+    if (typeof val === "string" && val.trim() && val !== key) {
       const hasAr = /[\u0600-\u06FF]/.test(val);
       if ((lang === "en" && !hasAr) || (lang === "ar" && hasAr)) {
         return val;
@@ -146,6 +146,7 @@ const LIBRARY_EN = {
   },
   topics: {
     abcde: {
+      keywords: ["abcde", "التقييم الأولي"],
       title: "ABCDE Primary Survey",
       summary: "Systematic A-B-C-D-E check to detect and treat life-threatening conditions in strict order of priority.",
       steps: [
@@ -197,6 +198,7 @@ const LIBRARY_EN = {
       }
     },
     avpu: {
+      keywords: ["avpu", "الوعي", "الاستجابة"],
       title: "AVPU Consciousness Scale",
       summary: "Rapid bedside neurological scale to classify responsiveness: Alert, Voice, Pain, or Unresponsive.",
       steps: [
@@ -230,73 +232,53 @@ const LIBRARY_EN = {
         }
       }
     },
-    breathing_rate: {
-      title: "Breathing Rate & Effort",
-      summary: "Count breaths per minute and observe chest symmetry and work of breathing.",
+    vitals_all: {
+      keywords: ["النبض", "العلامات", "vital", "pulse", "breathing_rate", "pulse_bp", "signs"],
+      title: "Pulse, Breathing & Vital Signs",
+      summary: "Normal adult baseline values, which must always be compared against age and clinical signs.",
       steps: [
-        "Watch the chest rise and fall for a full 60 seconds without alerting the person (so they breathe naturally).",
-        "Normal adult resting rate is 12 to 20 breaths per minute.",
-        "Look for warning signs: bluish lips (cyanosis), use of neck/shoulder muscles, inability to speak full sentences, or wheezing.",
-        "Help a conscious breathless person sit upright in a comfortable supported position and call emergency services if severe."
+        "Breathing Rate: Watch chest rise for 60 seconds; normal adult resting rate is 12–20 breaths per minute.",
+        "Pulse Rate: Feel the radial artery at the wrist for 30–60 seconds; normal adult resting pulse is 60–100 beats per minute.",
+        "Blood Pressure: Normal adult resting blood pressure is around 120/80 mmHg; low pressure with fast pulse suggests shock.",
+        "Temperature & Perfusion: Check skin warmth, color, and capillary refill (normal is under 2 seconds).",
+        "Warning: Normal vital signs do not rule out serious early illness—always reassess if symptoms worsen."
       ],
-      note: "Fewer than 8 or more than 30 breaths per minute in an adult is a medical emergency.",
+      note: "Always compare vital signs against the person's age group, as children and infants have faster normal heart and breathing rates.",
       ages: {
         child: {
-          title: "Breathing Rate — Child (1–12 Years)",
+          title: "Vital Signs — Child (1–12 Years)",
           steps: [
-            "Count chest movements for 60 seconds while the child is calm.",
-            "Normal rate is roughly 20–30 breaths/min (1–5 yrs) and 15–25 breaths/min (6–12 yrs).",
-            "Watch for sucking-in of skin between ribs or above the collarbone (retractions).",
-            "Keep the child upright with a caregiver and call EMS if breathing is labored."
+            "Breathing Rate: Normal is roughly 20–30 breaths/min (1–5 yrs) and 15–25 breaths/min (6–12 yrs).",
+            "Heart Rate: Normal resting pulse is roughly 80–130 bpm (1–5 yrs) and 70–110 bpm (6–12 yrs).",
+            "Perfusion: Check fingertip capillary refill (normal is under 2 seconds) and watch for rib retractions.",
+            "Action: Children maintain normal blood pressure until late in shock—act early on fast heart rate or pale skin."
           ],
-          note: "Head bobbing or grunting sounds indicate severe respiratory distress."
+          note: "Never wait for low blood pressure in a child before calling emergency services."
         },
         infant: {
-          title: "Breathing Rate — Infant (Under 1 Year)",
+          title: "Vital Signs — Infant (Under 1 Year)",
           steps: [
-            "Observe belly and chest rise for a full 60 seconds.",
-            "Normal infant breathing rate is 30 to 60 breaths per minute.",
-            "Check for nasal flaring, chest retractions, or pauses longer than 10 seconds.",
-            "Seek immediate emergency care for fast, noisy, or struggling breathing."
+            "Breathing Rate: Normal infant breathing rate is 30–60 breaths per minute.",
+            "Heart Rate: Feel the brachial pulse on the inner upper arm; normal rate is 100–160 beats per minute.",
+            "Warning Signs: Nasal flaring, chest retractions, grunting, or pauses over 10 seconds require immediate emergency care.",
+            "Critical Rule: If infant pulse drops below 60 bpm with poor perfusion, begin infant CPR immediately."
           ],
-          note: "Brief irregular pauses under 5 seconds can be normal, but pauses over 10 seconds are dangerous."
-        }
-      }
-    },
-    pulse_bp: {
-      title: "Pulse & Blood Pressure",
-      summary: "Assess heart rate, rhythm, and peripheral perfusion alongside blood pressure.",
-      steps: [
-        "Place index and middle fingers (never the thumb) on the radial artery at the thumb side of the wrist.",
-        "Count beats for 30 seconds and multiply by 2 (count full 60 seconds if irregular).",
-        "Normal adult resting pulse is 60 to 100 beats per minute; normal blood pressure is around 120/80 mmHg.",
-        "Check skin warmth and capillary refill: pale, cold, sweaty skin with a fast weak pulse signals shock."
-      ],
-      note: "In an unresponsive person, check the carotid pulse in the neck for no more than 10 seconds.",
-      ages: {
-        child: {
-          title: "Pulse & Blood Pressure — Child",
-          steps: [
-            "Check radial or carotid pulse using two fingers for 30–60 seconds.",
-            "Normal resting heart rate is higher in children: roughly 80–130 bpm (1–5 yrs) and 70–110 bpm (6–12 yrs).",
-            "Check capillary refill on a fingertip (normal is under 2 seconds).",
-            "Low blood pressure in children is a late sign of shock—act early on fast heart rate and pale skin."
-          ],
-          note: "Children maintain normal blood pressure until late in shock; monitor heart rate and skin signs closely."
+          note: "Use the brachial artery in the upper arm rather than the neck when checking an infant's pulse."
         },
-        infant: {
-          title: "Pulse — Infant (Under 1 Year)",
+        elderly: {
+          title: "Vital Signs — Elderly Adult",
           steps: [
-            "Feel the brachial pulse on the inside of the upper arm using two fingers.",
-            "Normal infant heart rate is 100 to 160 beats per minute.",
-            "If the pulse is below 60 bpm with poor perfusion, begin infant CPR immediately.",
-            "Call emergency services right away for abnormal color, lethargy, or weak pulse."
+            "Breathing Rate: Normal resting rate is 12–20 breaths/min; watch closely for subtle shortness of breath.",
+            "Pulse & Rhythm: Normal resting pulse is 60–100 bpm; note any irregular rhythm.",
+            "Medication Effect: Beta-blockers and blood pressure medications can prevent a fast heart rate even during shock or bleeding.",
+            "Action: Treat any sudden confusion, dizziness, or cold clammy skin as urgent even if numbers appear near normal."
           ],
-          note: "Use the brachial artery in infants rather than the neck (carotid) artery."
+          note: "Medications in older adults can mask classic vital-sign warning signs."
         }
       }
     },
     choking: {
+      keywords: ["اختناق", "الاختناق", "choking"],
       title: "Choking & Airway Obstruction",
       summary: "Immediate steps for partial or complete airway blockage across adults, children, and infants.",
       steps: [
@@ -331,6 +313,7 @@ const LIBRARY_EN = {
       }
     },
     bleeding: {
+      keywords: ["نزيف", "النزيف", "الجروح", "bleeding"],
       title: "Severe Bleeding & Wounds",
       summary: "Direct pressure, wound dressing, and elevation to stop severe blood loss.",
       steps: [
@@ -365,6 +348,7 @@ const LIBRARY_EN = {
       }
     },
     unconscious: {
+      keywords: ["إغماء", "الإغماء", "فقدان الوعي", "الإفاقة", "unconscious", "recovery"],
       title: "Unconsciousness & Recovery Position",
       summary: "Airway protection and recovery position for an unresponsive person who is breathing normally.",
       steps: [
@@ -399,6 +383,7 @@ const LIBRARY_EN = {
       }
     },
     cpr: {
+      keywords: ["الإنعاش", "إنعاش", "cpr"],
       title: "Cardiopulmonary Resuscitation (CPR)",
       summary: "High-quality chest compressions and rescue breaths for cardiac arrest.",
       steps: [
@@ -433,6 +418,7 @@ const LIBRARY_EN = {
       }
     },
     burns: {
+      keywords: ["حروق", "الحروق", "burns"],
       title: "Burns First Aid",
       summary: "Immediate cooling with running water and safe sterile covering for thermal burns.",
       steps: [
@@ -469,6 +455,20 @@ const LIBRARY_EN = {
   }
 };
 
+function findTopicEnEntry(topic) {
+  if (!topic) return null;
+  if (LIBRARY_EN.topics[topic.id]) return LIBRARY_EN.topics[topic.id];
+  const hay = (String(topic.id || "") + " " + String(topic.title || "")).toLowerCase();
+  const keys = Object.keys(LIBRARY_EN.topics);
+  for (let i = 0; i < keys.length; i++) {
+    const entry = LIBRARY_EN.topics[keys[i]];
+    if (entry.keywords && entry.keywords.some(function (k) { return hay.includes(k); })) {
+      return entry;
+    }
+  }
+  return null;
+}
+
 function getSectionTitle(sec) {
   if (safeGetLang() === "en") {
     const entry = LIBRARY_EN.sections[sec.id];
@@ -487,7 +487,7 @@ function getSectionIntro(sec) {
 
 function getTopicLocalized(topic) {
   const en = safeGetLang() === "en";
-  const enEntry = en ? LIBRARY_EN.topics[topic.id] : null;
+  const enEntry = en ? findTopicEnEntry(topic) : null;
   return {
     title: (enEntry && enEntry.title) || topic.title || "",
     summary: (enEntry && enEntry.summary) || topic.summary || topic.intro || "",
