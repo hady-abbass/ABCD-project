@@ -97,7 +97,7 @@ const MEDIA_MAP = {
     titleEn: "Video Guide: Bleeding Control & Dressing",
     descAr: "شاهد طريقة الضغط المباشر بالشاش المعقم ولف الضمادة الضاغطة.",
     descEn: "Watch how to apply firm direct pressure and wrap a pressure bandage.",
-    keys: ["نزيف", "قطع", "جرح", "دم", "صباع", "bleeding", "cut", "wound", "circulation"],
+    keys: ["نزيف", "بينزف", "قطع", "جرح", "دم", "صباع", "bleeding", "bleed", "cut", "wound", "circulation"],
     summaryAr: "السيطرة الفورية على النزيف بالضغط المباشر والمستمر تمنع الصدمة النزيفية وتنقذ حياة المصاب.",
     summaryEn: "Immediate, firm direct pressure stops severe blood loss and prevents life-threatening shock.",
     stepsAr: [
@@ -127,7 +127,7 @@ const MEDIA_MAP = {
     titleEn: "Video Guide: Unresponsive & Recovery Position",
     descAr: "شاهد خطوات قلب المصاب على جانبه وتأمين مجرى الهواء خطوة بخطوة.",
     descEn: "Watch how to safely roll an unresponsive breathing person onto their side.",
-    keys: ["إغماء", "فاقد", "غيبوبة", "الإفاقة", "وقع", "unconscious", "unresponsive", "faint", "recovery"],
+    keys: ["إغماء", "اغماء", "مغمي", "مغمى", "فاقد", "غيبوبة", "الإفاقة", "unconscious", "unresponsive", "faint", "passed out", "recovery"],
     summaryAr: "المصاب فاقد للوعي لكنه يتنفس؛ وضعيته على جانبه (وضعية الإفاقة) تحمي مجرى الهواء من الانسداد باللسان أو القيء.",
     summaryEn: "When an unresponsive person is breathing normally, placing them in the recovery position keeps their airway open.",
     stepsAr: [
@@ -361,28 +361,32 @@ function ensureCompleteSteps(analysis, userText) {
     analysis || {}
   );
 
-  if (matched) {
-    if (!out.summary) out.summary = useAr ? matched.summaryAr : matched.summaryEn;
-    if (!Array.isArray(out.steps) || out.steps.length < 4) {
+  if (!Array.isArray(out.steps) || out.steps.length === 0) {
+    if (matched && Array.isArray(matched.stepsAr) && matched.stepsAr.length) {
       out.steps = (useAr ? matched.stepsAr : matched.stepsEn).slice();
+    } else {
+      out.steps = useAr
+        ? [
+            "أمّن المكان حول المصاب وتأكد من سلامتك قبل الاقتراب.",
+            "تحقق من درجة الوعي والكلام والحركة، واطلب الإسعاف (" + safeEmergencyNo() + ") فوراً لأي أعراض عصبية أو مفاجئة.",
+            "راقب التنفس جيداً؛ إذا كان المصاب فاقداً للوعي ويتنفس فاجعله في وضعية الإفاقة، وإذا توقف التنفس فابدأ الإنعاش القلبي الرئوي (30 ضغطة + نفسان).",
+            "إذا وُجد نزيف ظاهر، اضغط مباشرة على مكان النزيف بقماش نظيف أو شاش ولا تترك المصاب بمفرده حتى وصول الإسعاف."
+          ]
+        : [
+            "Ensure the scene is safe before approaching the person.",
+            "Check responsiveness, speech, and limb movement, and call emergency services (" + safeEmergencyNo() + ") immediately for sudden or neurological symptoms.",
+            "Monitor breathing closely; place an unresponsive breathing person in the recovery position, or start CPR (30 compressions + 2 breaths) if not breathing.",
+            "If bleeding is present, apply direct pressure with a clean cloth and stay with the person until EMS arrives."
+          ];
     }
-  } else if (!Array.isArray(out.steps) || out.steps.length === 0) {
-    out.steps = useAr
-      ? [
-          "تأكد من أمان المكان حولك وحول المصاب قبل الاقتراب.",
-          "افحص استجابة المصاب بالصوت واللمس وراقب تنفسه لمدة 10 ثوانٍ.",
-          "إذا كان لا يتنفس: ابدأ الإنعاش القلبي الرئوي (30 ضغطة في منتصف الصدر + نفسان) فوراً.",
-          "إذا كان هناك نزيف: اضغط بقوة مباشرة على الجرح بشاش أو قماشة نظيفة لمدة 10 دقائق.",
-          "اتصل بالإسعاف على " + safeEmergencyNo() + " وابقَ بجانب المصاب لمراقبة حالته."
-        ]
-      : [
-          "Ensure the scene is safe before approaching the injured person.",
-          "Check responsiveness by shouting and tapping shoulders, and check breathing for 10 seconds.",
-          "If not breathing normally: start CPR (30 chest compressions + 2 breaths) immediately.",
-          "If bleeding heavily: apply firm direct pressure with a clean cloth for 10 minutes.",
-          "Call emergency services (" + safeEmergencyNo() + ") and stay with the person."
-        ];
   }
+
+  if (!out.summary || !String(out.summary).trim()) {
+    if (matched) {
+      out.summary = useAr ? matched.summaryAr : matched.summaryEn;
+    }
+  }
+
   return out;
 }
 
@@ -393,7 +397,6 @@ function renderResult(rawAnalysis, userText) {
   box.append(make("div", "triage triage-" + a.triage, safeT("triage_" + a.triage)));
   if (a.summary) box.append(make("p", "summary", a.summary));
 
-  // 1. الخطوات التفصيلية للتصرف تظهر أولاً في المقدمة
   if (a.steps && a.steps.length) {
     const stepsCard = make("section", "abcde");
     stepsCard.style.borderWidth = "2px";
@@ -405,13 +408,11 @@ function renderResult(rawAnalysis, userText) {
     box.append(stepsCard);
   }
 
-  // 2. كارت الصورة وفيديو اليوتيوب التوضيحي بعد الخطوات مباشرة
   const matchedMedia = matchMediaForText(userText);
   if (matchedMedia) {
     box.append(buildMediaCard(matchedMedia, useAr));
   }
 
-  // 3. تقسيم الفحص والتصرف حسب ABCDE
   ["A", "B", "C", "D", "E"].forEach(function (letter) {
     const sec = a[letter];
     if (!sec || (!sec.checks.length && !sec.actions.length)) return;
@@ -451,7 +452,6 @@ function showHome() {
     }
     lastCase = text;
 
-    // عرض الخطوات التفصيلية + الصورة والفيديو فوراً في نفس اللحظة
     result.replaceChildren(renderResult(null, text));
     result.scrollIntoView({ behavior: "smooth", block: "start" });
 
