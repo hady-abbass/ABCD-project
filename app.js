@@ -4,11 +4,11 @@ let lastCase = "";
 const LOGO_SVG = '<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#ffffff"/><path d="M19 6h10v11h11v10H29v11H19V27H8V17h11z" fill="#0066CC"/><path d="M4 42h10l3-5 4 9 4-7 3 3h16" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function ytWatchUrl(id) {
-  return "https:/" + "/www.youtube.com/watch?v=" + id;
+  return "https:/" + "/[www.youtube.com/watch?v=](https://www.youtube.com/watch?v=)" + id;
 }
 
 function ytThumbUrl(id) {
-  return "https:/" + "/i.ytimg.com/vi/" + id + "/hqdefault.jpg";
+  return "https:/" + "/[i.ytimg.com/vi/](https://i.ytimg.com/vi/)" + id + "/hqdefault.jpg";
 }
 
 function safeGetLang() {
@@ -38,7 +38,7 @@ function safeT(key) {
     caseHelp: "اكتب الأعراض بوضوح أو اختر حالة جاهزة من الأعلى.",
     caseInputPlaceholder: "مثال: شخص سقط ولا يستجيب أو ينزف بشدة...",
     analyze: "حلّل الحالة",
-    analyzing: "جاري تحليل الحالة...",
+    analyzing: "جاري تجهيز الخطوات التفصيلية...",
     emptyCase: "من فضلك اكتب وصف الحالة أولاً.",
     notice: "تنبيه: في الحالات المهددة للحياة اتصل فوراً برقم الطوارئ ",
     callNow: "اتصل بالإسعاف فوراً: ",
@@ -63,50 +63,50 @@ const MEDIA_MAP = {
     srcs: ["images/choking.webp", "images/1000_F_233179021_W3oUrTc4MTjTZZvC1KMANt3Z9jEqZUew.webp", ytThumbUrl("HGBBu4zr8sM")],
     ytAr: "81BXd2Gi6kg",
     ytEn: "HGBBu4zr8sM",
-    titleAr: "إسعاف الاختناق (مناورة هيمليك والضربات الظهرية)",
-    titleEn: "Choking First Aid (Back Blows & Heimlich)",
-    descAr: "5 ضربات بين لوحي الكتف بالتبادل مع 5 ضغطات بطنية أعلى السرة.",
-    descEn: "Alternate 5 firm back blows with 5 inward-and-upward abdominal thrusts.",
+    titleAr: "فيديو توضيحي: إسعاف الاختناق (مناورة هيمليك)",
+    titleEn: "Video Guide: Choking First Aid (Heimlich)",
+    descAr: "شاهد التطبيق العملي للضربات الظهرية والضغطات البطنية بالترتيب الصحيح.",
+    descEn: "Watch the practical demonstration of back blows and abdominal thrusts.",
     keys: ["اختناق", "شرق", "بلع", "مجرى الهواء", "choking", "heimlich", "airway"]
   },
   bleeding: {
     srcs: ["images/bleeding.jpg", "images/pexels-rdne-6520110.jpg", ytThumbUrl("NxO5LvgqZe0")],
     ytAr: "_ofcOGEsa7c",
     ytEn: "NxO5LvgqZe0",
-    titleAr: "إيقاف النزيف وتضميد الجروح",
-    titleEn: "Bleeding Control & Wound Dressing",
-    descAr: "اضغط مباشرة بشاش معقم بقوة وارفع الطرف المصاب فوق مستوى القلب.",
-    descEn: "Apply firm direct pressure with sterile gauze and elevate the injured limb.",
+    titleAr: "فيديو توضيحي: إيقاف النزيف وتضميد الجروح",
+    titleEn: "Video Guide: Bleeding Control & Dressing",
+    descAr: "شاهد طريقة الضغط المباشر بالشاش المعقم ولف الضمادة الضاغطة.",
+    descEn: "Watch how to apply firm direct pressure and wrap a pressure bandage.",
     keys: ["نزيف", "قطع", "جرح", "دم", "صباع", "bleeding", "cut", "wound", "circulation"]
   },
   unresponsive: {
     srcs: ["images/recovery.jpg", "images/pexels-mikhail-nilov-8942737.jpg", ytThumbUrl("GmqXqwSV3bo")],
     ytAr: "6ZmWhzrfPPY",
     ytEn: "GmqXqwSV3bo",
-    titleAr: "فقدان الوعي ووضعية الإفاقة",
-    titleEn: "Unresponsive & Recovery Position",
-    descAr: "تأكد من التنفس، اقلب المصاب على جانبه لفتح مجرى الهواء، واطلب الإسعاف.",
-    descEn: "Check breathing, roll onto side to keep airway open, and call EMS.",
+    titleAr: "فيديو توضيحي: فقدان الوعي ووضعية الإفاقة",
+    titleEn: "Video Guide: Unresponsive & Recovery Position",
+    descAr: "شاهد خطوات قلب المصاب على جانبه وتأمين مجرى الهواء خطوة بخطوة.",
+    descEn: "Watch how to safely roll an unresponsive breathing person onto their side.",
     keys: ["إغماء", "فاقد", "غيبوبة", "الإفاقة", "وقع", "unconscious", "unresponsive", "faint", "recovery"]
   },
   cpr: {
     srcs: ["images/cpr.jpg", "images/pexels-tahir-33029223.jpg", ytThumbUrl("BQNNOh8c8ks")],
     ytAr: "JIFt-55TRGk",
     ytEn: "BQNNOh8c8ks",
-    titleAr: "الإنعاش القلبي الرئوي (CPR)",
-    titleEn: "Cardiopulmonary Resuscitation (CPR)",
-    descAr: "30 ضغطة في منتصف الصدر بعمق 5-6 سم تليها نفسان إنقاذيان.",
-    descEn: "30 chest compressions (5–6 cm deep at 100–120/min) followed by 2 rescue breaths.",
+    titleAr: "فيديو توضيحي: الإنعاش القلبي الرئوي (CPR)",
+    titleEn: "Video Guide: Cardiopulmonary Resuscitation (CPR)",
+    descAr: "شاهد موضع اليدين الصحيح ومعدل الضغطات الصدرية (30 ضغطة + نفسين).",
+    descEn: "Watch proper hand placement and chest compression rhythm (30:2).",
     keys: ["قلب", "نبض", "تنفس", "إنعاش", "توقف", "cpr", "cardiac", "pulse", "breathing"]
   },
   burns: {
     srcs: ["images/burns.jpg", ytThumbUrl("6i7ov4vbxUc")],
     ytAr: "HaC2oiBB7sI",
     ytEn: "6i7ov4vbxUc",
-    titleAr: "إسعاف الحروق الحرارية",
-    titleEn: "Thermal Burns First Aid",
-    descAr: "برّد الحرق بماء جارٍ فاتر 20 دقيقة وغطِّه بشاش نظيف غير لاصق.",
-    descEn: "Cool under running tap water for 20 minutes and cover loosely with sterile dressing.",
+    titleAr: "فيديو توضيحي: إسعاف الحروق الحرارية",
+    titleEn: "Video Guide: Thermal Burns First Aid",
+    descAr: "شاهد طريقة تبريد الحرق بالماء الجاري وتغطيته بشكل آمن.",
+    descEn: "Watch how to cool a burn under running water and cover it safely.",
     keys: ["حرق", "حروق", "مية مغلية", "نار", "فقاعات", "burn", "burns", "scald"]
   }
 };
@@ -152,6 +152,15 @@ function listOf(items) {
     ul.append(make("li", "", item));
   });
   return ul;
+}
+
+function orderedListOf(items) {
+  const ol = make("ol");
+  ol.style.cssText = "margin:8px 0 0;padding-inline-start:24px;display:flex;flex-direction:column;gap:8px;line-height:1.75;";
+  items.forEach(function (item) {
+    ol.append(make("li", "", item));
+  });
+  return ol;
 }
 
 function render() {
@@ -240,9 +249,25 @@ function renderResult(a, userText) {
   box.append(make("div", "triage triage-" + a.triage, safeT("triage_" + a.triage)));
   if (a.summary) box.append(make("p", "summary", a.summary));
 
-  const matchedMedia = matchMediaForText(userText);
-  if (matchedMedia) box.append(buildMediaCard(matchedMedia, useAr));
+  // 1. عرض الخطوات التفصيلية للتصرف في المقدمة قبل أي شيء آخر
+  if (a.steps && a.steps.length) {
+    const stepsCard = make("section", "abcde");
+    stepsCard.style.borderWidth = "2px";
+    stepsCard.style.borderColor = "var(--blue-text)";
+    stepsCard.append(
+      make("h2", "", useAr ? "الخطوات التفصيلية للتعامل مع الحالة (تعمل إيه بالترتيب):" : "Detailed Step-by-Step Action Guide (What to Do):"),
+      orderedListOf(a.steps)
+    );
+    box.append(stepsCard);
+  }
 
+  // 2. كارت الصورة وفيديو اليوتيوب التوضيحي بعد الخطوات مباشرة
+  const matchedMedia = matchMediaForText(userText);
+  if (matchedMedia) {
+    box.append(buildMediaCard(matchedMedia, useAr));
+  }
+
+  // 3. تقسيم الفحص والتصرف حسب بروتوكول ABCDE
   ["A", "B", "C", "D", "E"].forEach(function (letter) {
     const sec = a[letter];
     if (!sec || (!sec.checks.length && !sec.actions.length)) return;
@@ -289,7 +314,8 @@ function showHome() {
     } else {
       analysis = {
         triage: "urgent",
-        summary: en ? "Follow the visual guide and ABCDE steps below." : "اتبع الدليل المصور وخطوات ABCDE بالأسفل.",
+        summary: en ? "Follow the step-by-step instructions below." : "اتبع الخطوات التفصيلية بالأسفل.",
+        steps: [],
         A: { checks: [], actions: [] },
         B: { checks: [], actions: [] },
         C: { checks: [], actions: [] },
@@ -312,32 +338,32 @@ function showHome() {
       media: MEDIA_MAP.choking,
       titleAr: "اختناق شخص بالغ",
       titleEn: "Adult Choking",
-      promptAr: "شخص يمسك رقبته ومش قادر يتكلم أو يسعل بقوة بسبب الاختناق، أتصرف إزاي؟",
-      promptEn: "An adult is clutching their throat and cannot speak or cough forcefully. What should I do?"
+      promptAr: "شخص يمسك رقبته ومش قادر يتكلم أو يسعل بقوة بسبب الاختناق، أتصرف إزاي بالتفصيل؟",
+      promptEn: "An adult is clutching their throat and cannot speak or cough forcefully. What should I do step by step?"
     },
     {
       id: "bleeding",
       media: MEDIA_MAP.bleeding,
       titleAr: "نزيف شديد في الطرف",
       titleEn: "Severe Limb Bleeding",
-      promptAr: "جرح عميق والدم بينزف بغزارة، إزاي أوقف النزيف لحد وصول الإسعاف؟",
-      promptEn: "Deep wound with heavy bleeding. How do I stop the bleeding until EMS arrives?"
+      promptAr: "جرح عميق والدم بينزف بغزارة، إزاي أوقف النزيف بالتفصيل لحد وصول الإسعاف؟",
+      promptEn: "Deep wound with heavy bleeding. How do I stop the bleeding step by step until EMS arrives?"
     },
     {
       id: "unresponsive",
       media: MEDIA_MAP.unresponsive,
       titleAr: "فاقد الوعي ومتنفس",
       titleEn: "Unresponsive & Breathing",
-      promptAr: "شخص واقع على الأرض ومش بيرد لكن بيتنفس عادي، أعمل إيه؟",
-      promptEn: "Someone is unresponsive on the floor but breathing normally. What should I do?"
+      promptAr: "شخص واقع على الأرض ومش بيرد لكن بيتنفس عادي، أعمل إيه بالتفصيل؟",
+      promptEn: "Someone is unresponsive on the floor but breathing normally. What should I do step by step?"
     },
     {
       id: "cpr",
       media: MEDIA_MAP.cpr,
       titleAr: "توقف التنفس والإنعاش (CPR)",
       titleEn: "Cardiac Arrest (CPR)",
-      promptAr: "شخص سقط فجأة ولا يستجيب ولا يتنفس، كيف أبدأ الإنعاش القلبي الرئوي؟",
-      promptEn: "Someone collapsed, is unresponsive and not breathing. How do I start CPR?"
+      promptAr: "شخص سقط فجأة ولا يستجيب ولا يتنفس، كيف أبدأ الإنعاش القلبي الرئوي بالتفصيل؟",
+      promptEn: "Someone collapsed, is unresponsive and not breathing. How do I perform CPR step by step?"
     }
   ];
 
@@ -351,7 +377,7 @@ function showHome() {
     const body = make("div", "case-card-body");
     body.append(
       make("span", "case-name", en ? item.titleEn : item.titleAr),
-      make("span", "case-hint", en ? "Click for instant steps & video" : "اضغط للتحليل الفوري والفيديو")
+      make("span", "case-hint", en ? "Click for detailed steps & video" : "اضغط للخطوات التفصيلية والفيديو")
     );
     b.append(img, body);
 
@@ -373,7 +399,7 @@ function showHome() {
   render(
     hero(),
     abcdeOverviewSection(),
-    make("h2", "", en ? "Choose an Emergency Case (Photo & Video):" : "اختر حالة طارئة سريعة (بالصورة والفيديو):"),
+    make("h2", "", en ? "Choose an Emergency Case (Detailed Steps & Video):" : "اختر حالة طارئة سريعة (بالخطوات التفصيلية والفيديو):"),
     examples,
     caseBox,
     safetyNotice(),
@@ -416,7 +442,7 @@ function showLibrary() {
   });
   render(
     make("h1", "", en ? "First-Aid Library" : "مكتبة الإسعافات الأولية"),
-    make("p", "muted", en ? "Select a section and condition for real-photo steps and video tutorials." : "اختر القسم ثم الحالة لعرض الخطوات بالصور الحقيقية وفيديو الشرح العملي لكل فئة عمرية."),
+    make("p", "muted", en ? "Select a section and condition for step-by-step instructions and video tutorials." : "اختر القسم ثم الحالة لعرض الخطوات التفصيلية بالصور الحقيقية وفيديو الشرح العملي لكل فئة عمرية."),
     safetyNotice(),
     grid
   );
@@ -471,12 +497,12 @@ function showTopic(id) {
     active.style.color = "var(--on-blue)";
     body.replaceChildren();
 
+    body.append(make("h2", "", tab.title), orderedListOf(tab.steps));
+    if (tab.note) body.append(make("p", "notice", tab.note));
+
     const mediaKey = tab.art !== undefined && tab.art !== null ? LIBRARY_GALLERY_KEYS[tab.art] : (topic.id === "abcde" || topic.id === "avpu" ? "unresponsive" : "cpr");
     const media = MEDIA_MAP[mediaKey];
     if (media) body.append(buildMediaCard(media, !en));
-
-    body.append(make("h2", "", tab.title), listOf(tab.steps));
-    if (tab.note) body.append(make("p", "notice", tab.note));
   }
   show(tabs[0], buttons[0]);
 
