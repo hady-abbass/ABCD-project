@@ -17,22 +17,22 @@
 
   const TOPICS = [
     {
-      keys: ["صباع", "مقطوع", "بتر", "نزيف", "بينزف", "قطع", "جرح", "دم", "bleed", "cut", "wound", "amputat"],
+      keys: ["صباع", "مقطوع", "بتر", "نزيف", "بينزف", "قطع", "جرح", "دم", "قماش", "شاش", "bleed", "cut", "wound", "amputat", "cloth", "gauze"],
       ytAr: "_ofcOGEsa7c",
       ytEn: "NxO5LvgqZe0",
       labelAr: "فيديو شرح إيقاف النزيف والجروح",
       labelEn: "Bleeding & Wound Care Video",
       stepsAr: [
-        "1- اضغط فوراً ومباشرة على مكان النزيف بشاش معقم أو قطعة قماش نظيفة بقوة ولمدة 10 دقائق متواصلة دون رفع يدك.",
-        "2- إذا كان هناك جزء مفصول (مثل طرف إصبع): لف الجزء المفصول في شاش نظيف رطب وضعه داخل كيس بلاستيكي مغلق، ثم ضع الكيس داخل وعاء به ماء بارد وثلج (لا تلمس الثلج للجزء مباشرة ولا تغسله بالماء).",
-        "3- ارفع الطرف المصاب فوق مستوى القلب إذا لم يكن هناك ألم شديد يشير لكسر.",
-        "4- إذا تشبّع الشاش بالدم ضع طبقة شاش أخرى فوقه ولا تنزع الأول، واتصل بالإسعاف (" + emergencyNum() + ") فوراً."
+        "1- اضغط فوراً ومباشرة على مكان النزيف بشاش معقم أو أي قطعة قماش نظيفة بقوة ولمدة 10 دقائق متواصلة دون رفع يدك.",
+        "2- إذا لم يتوفر شاش أو قماش: استخدم يدك مباشرة (مع غسلها أو ارتداء قفاز/كيس نظيف إن أمكن) واضغط بقوة على الجرح لإبطاء النزيف حتى وصول الإسعاف أو توفر ضمادة.",
+        "3- إذا كان هناك جزء مفصول (مثل طرف إصبع): لف الجزء المفصول في قطعة قماش أو شاش رطب نظيف وضعه في كيس مغلق، ثم ضع الكيس داخل وعاء به ماء بارد وثلج (لا تلمس الثلج للجزء مباشرة ولا تغسله بالماء).",
+        "4- ارفع الطرف المصاب فوق مستوى القلب إن أمكن، وإذا تشبّع القماش بالدم ضع طبقة أخرى فوقه ولا تنزع الأول، واتصل بالإسعاف (" + emergencyNum() + ") فوراً."
       ],
       stepsEn: [
-        "1- Apply firm, continuous direct pressure over the bleeding site with sterile gauze or a clean cloth for at least 10 minutes without lifting your hand.",
-        "2- If a fingertip/digit is amputated: wrap it in clean damp gauze inside a sealed plastic bag, then place that bag in a container of ice water (never put ice directly on the tissue or wash it).",
-        "3- Elevate the injured limb above heart level if no fracture is suspected.",
-        "4- Layer extra dressings on top if blood soaks through (do not remove the first) and call emergency services (" + emergencyNum() + ") immediately."
+        "1- Apply firm, continuous direct pressure over the bleeding wound with sterile gauze or any clean cloth for at least 10 minutes without lifting your hand.",
+        "2- If no cloth or gauze is available: press firmly directly over the wound using your hand (with a clean barrier/glove if possible) to control bleeding until help arrives.",
+        "3- If a fingertip/digit is amputated: wrap it in clean damp cloth/gauze inside a sealed bag, then place that bag in a container of cold water and ice (never put ice directly on the tissue or wash it).",
+        "4- Elevate the injured limb above heart level if possible, layer extra cloth on top if soaked without removing the first, and call emergency services (" + emergencyNum() + ") immediately."
       ]
     },
     {
@@ -143,54 +143,28 @@
     };
   }
 
-  // استدعاء مباشر للـ endpoint في CONFIG لتفادي أي تعارض في callAI
-  async function askDirectAI(q) {
-    if (typeof CONFIG === "undefined" || !CONFIG.ai || !CONFIG.ai.enabled || !CONFIG.ai.endpoint) {
-      throw new Error("NO_ENDPOINT");
-    }
-    const headers = { "Content-Type": "application/json" };
-    const key = (CONFIG.ai.apiKey || "").trim();
-    if (key && !key.startsWith("PASTE_")) {
-      headers.Authorization = "Bearer " + key;
-    }
-    const sysPrompt = isAr(q)
-      ? "أنت مساعد إسعافات أولية ذكي. أجب باللهجة المصرية الواضحة في 3 إلى 4 نقاط مرقمة (1- 2- 3-) تشرح ماذا يفعل المسعف بالضبط، بدون رموز ماركداون (* أو #)."
-      : "You are a first-aid assistant. Reply in clear English in 3 to 4 numbered steps (1- 2- 3-) explaining what to do, without markdown symbols (* or #).";
-
+  // استدعاء دالة analyzeCase الأساسية الخاصة بالموقع لضمان نفس جودة الردود
+  async function askMainAppAI(q) {
+    if (typeof analyzeCase !== "function") return null;
     const controller = new AbortController();
-    const timer = setTimeout(function () { controller.abort(); }, 12000);
-    try {
-      const res = await fetch(CONFIG.ai.endpoint, {
-        method: "POST",
-        headers: headers,
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: CONFIG.ai.model,
-          messages: [
-            { role: "system", content: sysPrompt },
-            { role: "user", content: q }
-          ],
-          max_tokens: 800,
-          temperature: 0.3
-        })
+    const analysis = await Promise.race([
+      analyzeCase(q),
+      new Promise(function (_, reject) {
+        setTimeout(function () {
+          controller.abort();
+          reject(new Error("TIMEOUT"));
+        }, 7000);
+      })
+    ]);
+    if (!analysis) return null;
+    const collected = [];
+    if (Array.isArray(analysis.steps)) {
+      analysis.steps.slice(0, 4).forEach(function (st, idx) {
+        const clean = String(st || "").replace(/[*#_`~]/g, "").trim();
+        if (clean) collected.push((idx + 1) + "- " + clean);
       });
-      if (!res.ok) throw new Error("HTTP_" + res.status);
-      const data = await res.json();
-      const content =
-        data &&
-        data.choices &&
-        data.choices[0] &&
-        data.choices[0].message &&
-        data.choices[0].message.content;
-      if (!content) throw new Error("EMPTY");
-      return String(content)
-        .replace(/[*#_`~]/g, "")
-        .split(/\r?\n/)
-        .map(function (s) { return s.trim(); })
-        .filter(Boolean);
-    } finally {
-      clearTimeout(timer);
     }
+    return collected.length >= 2 ? collected : null;
   }
 
   const fab = document.createElement("button");
@@ -248,20 +222,18 @@
     const botBubble = document.createElement("div");
     botBubble.style.cssText = "align-self:flex-start;background:rgba(128,128,128,0.18);padding:10px 12px;border-radius:10px;max-width:92%;display:flex;flex-direction:column;gap:6px;";
     const loadingText = document.createElement("div");
-    loadingText.textContent = isAr(q) ? "جاري الاتصال بالمساعد الذكي..." : "Connecting to AI assistant...";
+    loadingText.textContent = isAr(q) ? "جاري تجهيز الخطوات..." : "Preparing steps...";
     botBubble.append(loadingText);
     msgs.append(botBubble);
     msgs.scrollTop = msgs.scrollHeight;
 
     const built = buildSmartReply(q);
     let finalLines = built.lines;
-    let usedAI = false;
 
     try {
-      const aiLines = await askDirectAI(q);
-      if (aiLines && aiLines.length >= 2) {
-        finalLines = aiLines;
-        usedAI = true;
+      const mainSteps = await askMainAppAI(q);
+      if (mainSteps && mainSteps.length >= 2) {
+        finalLines = mainSteps;
       }
     } catch (_) {
       finalLines = built.lines;
@@ -281,13 +253,6 @@
     link.textContent = "▶ " + built.ytText + " ↗";
     link.style.cssText = "color:#4da3ff;font-weight:700;text-decoration:underline;margin-top:4px;";
     botBubble.append(link);
-
-    const tag = document.createElement("div");
-    tag.textContent = usedAI
-      ? (isAr(q) ? "رد مباشر عبر AI" : "Live AI response")
-      : (isAr(q) ? "دليل إسعافي فوري" : "Instant first-aid guide");
-    tag.style.cssText = "font-size:11px;opacity:0.7;margin-top:2px;";
-    botBubble.append(tag);
 
     msgs.scrollTop = msgs.scrollHeight;
   });
