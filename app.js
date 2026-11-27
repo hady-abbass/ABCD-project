@@ -4,11 +4,11 @@ let lastCase = "";
 const LOGO_SVG = '<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#ffffff"/><path d="M19 6h10v11h11v10H29v11H19V27H8V17h11z" fill="#0066CC"/><path d="M4 42h10l3-5 4 9 4-7 3 3h16" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function ytWatchUrl(id) {
-  return "https:/" + "/[www.youtube.com/watch?v=](https://www.youtube.com/watch?v=)" + id;
+  return "https:/" + "/www.youtube.com/watch?v=" + id;
 }
 
 function ytThumbUrl(id) {
-  return "https:/" + "/[i.ytimg.com/vi/](https://i.ytimg.com/vi/)" + id + "/hqdefault.jpg";
+  return "https:/" + "/i.ytimg.com/vi/" + id + "/hqdefault.jpg";
 }
 
 function safeGetLang() {
@@ -249,7 +249,7 @@ function renderResult(a, userText) {
   box.append(make("div", "triage triage-" + a.triage, safeT("triage_" + a.triage)));
   if (a.summary) box.append(make("p", "summary", a.summary));
 
-  // 1. عرض الخطوات التفصيلية للتصرف في المقدمة قبل أي شيء آخر
+  // 1. الخطوات التفصيلية للتصرف في المقدمة
   if (a.steps && a.steps.length) {
     const stepsCard = make("section", "abcde");
     stepsCard.style.borderWidth = "2px";
@@ -261,13 +261,13 @@ function renderResult(a, userText) {
     box.append(stepsCard);
   }
 
-  // 2. كارت الصورة وفيديو اليوتيوب التوضيحي بعد الخطوات مباشرة
+  // 2. كارت الصورة وفيديو اليوتيوب التوضيحي
   const matchedMedia = matchMediaForText(userText);
   if (matchedMedia) {
     box.append(buildMediaCard(matchedMedia, useAr));
   }
 
-  // 3. تقسيم الفحص والتصرف حسب بروتوكول ABCDE
+  // 3. تقسيم ABCDE
   ["A", "B", "C", "D", "E"].forEach(function (letter) {
     const sec = a[letter];
     if (!sec || (!sec.checks.length && !sec.actions.length)) return;
@@ -306,6 +306,16 @@ function showHome() {
       return;
     }
     lastCase = text;
+    const useAr = /[\u0600-\u06FF]/.test(text);
+
+    // عرض الصورة وفيديو اليوتيوب فوراً في نفس اللحظة أثناء تحميل الخطوات
+    const instantMedia = matchMediaForText(text);
+    if (instantMedia) {
+      result.replaceChildren(buildMediaCard(instantMedia, useAr));
+    } else {
+      result.replaceChildren();
+    }
+
     analyzeBtn.disabled = true;
     statusMsg.textContent = safeT("analyzing");
     let analysis;
