@@ -1,13 +1,14 @@
-// ai-feedback.js: sends the case to the AI and turns the answer into ABCDE steps.
-// If the AI fails, a safe general plan is shown with the error code, so the problem can be found.
+// ai-feedback.js: concise problem-specific ABCDE analysis + input-language detection.
 
-// Emergency number: uses config.js if it was changed, otherwise 123 (Egypt).
 function emergencyNo() {
   const n = String(CONFIG.emergencyNumber || "").trim();
   return n && !n.startsWith("[") ? n : "123";
 }
 
-// The exact shape the AI must return. Gemini follows this schema, so the JSON stays valid.
+function isArabicText(text) {
+  return /[\u0600-\u06FF]/.test(String(text || ""));
+}
+
 const ABCDE_SECTION_SCHEMA = {
   type: "OBJECT",
   properties: {
@@ -16,6 +17,7 @@ const ABCDE_SECTION_SCHEMA = {
   },
   required: ["checks", "actions"]
 };
+
 const ABCDE_SCHEMA = {
   type: "OBJECT",
   properties: {
@@ -31,13 +33,11 @@ const ABCDE_SCHEMA = {
   required: ["triage", "summary", "A", "B", "C", "D", "E", "notes"]
 };
 
-// Calls the AI. For Gemini it uses Google's own API, which works with the new AQ. keys.
-// Other services (Groq, OpenRouter, your Cloudflare Worker) use the OpenAI format.
 async function callAI(messages, options = {}) {
   const cfg = CONFIG.ai;
   const apiKey = (cfg.apiKey || "").trim();
   const hasDirectKey = apiKey !== "" && !apiKey.startsWith("PASTE_");
-  const usesProxy = apiKey === ""; // empty key = your Worker holds the key
+  const usesProxy = apiKey === "";
   if (!cfg.enabled || (!hasDirectKey && !usesProxy)) throw new Error("AI_DISABLED");
 
   if (cfg.endpoint.includes("generativelanguage.googleapis.com")) {
@@ -53,8 +53,8 @@ async function callAI(messages, options = {}) {
     body: JSON.stringify({
       model: cfg.model,
       messages,
-      max_tokens: Math.max(cfg.maxTokens || 0, 2000),
-      temperature: cfg.temperature
+      max_tokens: Math.min(cfg.maxTokens || 1200, 1200),
+      temperature: 0.3
     })
   });
   if (!res.ok) throw new Error(`AI_HTTP_${res.status}`);
@@ -65,10 +65,8 @@ async function callAI(messages, options = {}) {
   return text;
 }
 
-// Remembers which model name worked, so later calls skip names that returned 404.
 let workingModel = null;
 
-// Gemini's native API. Keeps thinking minimal so answers come back fast.
 async function callGeminiNative(messages, apiKey, wantJSON) {
   const cfg = CONFIG.ai;
   const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n");
@@ -79,8 +77,8 @@ async function callGeminiNative(messages, apiKey, wantJSON) {
 
   const makeBody = (model, withThinking) => {
     const generationConfig = {
-      temperature: cfg.temperature,
-      maxOutputTokens: Math.max(cfg.maxTokens || 0, 1500),
+      temperature: 0.3,
+      maxOutputTokens: 1200,
       ...(wantJSON ? { responseMimeType: "application/json", responseSchema: ABCDE_SCHEMA } : {})
     };
     if (withThinking) {
@@ -99,14 +97,13 @@ async function callGeminiNative(messages, apiKey, wantJSON) {
     let body = makeBody(model, true);
     res = await send(url, body, { "x-goog-api-key": apiKey });
     if (res.status === 400) {
-      // This model may not accept the thinking setting, so retry without it.
       body = makeBody(model, false);
       res = await send(url, body, { "x-goog-api-key": apiKey });
     }
     if (res.status === 401 || res.status === 403) res = await send(url, body, { Authorization: `Bearer ${apiKey}` });
     if (res.status !== 404) {
       if (res.ok) workingModel = model;
-      break; // 404 = this model name is not available, so try the next one
+      break;
     }
   }
   if (!res.ok) throw new Error(`AI_HTTP_${res.status}`);
@@ -118,28 +115,25 @@ async function callGeminiNative(messages, apiKey, wantJSON) {
   return text;
 }
 
-// Words that point to a dangerous case. Used only when the AI is not available.
 const DANGER_WORDS = ["اختنق", "مختنق", "نزيف", "بينزف", "مش بيتنفس", "مش متنفس", "مش بيرد", "فاقد", "إغماء", "اغماء", "صدر", "choking", "choke", "bleed", "unconscious", "not breathing", "unresponsive", "chest pain", "stroke", "seizure", "fainted"];
 
-// General safe plan, used when the AI is not available. Same shape as the AI answer.
 const ABCDE_FALLBACK = {
   ar: {
-    A: { checks: ["هل فيه حاجة في الفم أو الحلق بتسد الهوا؟"], actions: ["لو مش بيتكلم ولا بيسعل بقوة: اتصل بالإسعاف، واعمل 5 ضربات ظهر و5 ضغطات بطن بالتبادل."] },
-    B: { checks: ["هل بيتنفس؟ شوف الصدر بيطلع وينزل.", "هل التنفس سريع أو بصعوبة؟"], actions: ["لو مش بيتنفس: اتصل بالإسعاف وابدأ الإنعاش القلبي الرئوي فورًا.", "لو بيتنفس: خليه في وضع مريح."] },
-    C: { checks: ["هل فيه نزيف؟ فين؟", "هل الجلد بارد أو شاحب؟"], actions: ["اضغط على النزيف بقماشة نظيفة بقوة وباستمرار."] },
-    D: { checks: ["هل الشخص واعي ويرد على الكلام؟"], actions: ["لو مش واعي وبيتنفس: حطه في وضعية الإفاقة (على جنبه)."] },
-    E: { checks: ["هل فيه إصابات تانية؟", "هل جسمه بارد أو سخن جدًا؟"], actions: ["غطّيه لو برد، ومتحركوش لو في شك في إصابة الرقبة أو الضهر."] }
+    A: { checks: ["تأكد أن مجرى الهواء مفتوح."], actions: ["لو مختنق: 5 ضربات ظهر و5 ضغطات بطن."] },
+    B: { checks: ["راقب حركة الصدر والتنفس."], actions: ["لو لا يتنفس: ابدأ الإنعاش القلبي CPR فوراً."] },
+    C: { checks: ["ابحث عن أي نزيف ظاهر."], actions: ["اضغط بقوة على الجرح بقماشة نظيفة."] },
+    D: { checks: ["اختبر استجابة المصاب لصوتك."], actions: ["لو فاقد الوعي ويتنفس: ضعه في وضعية الإفاقة."] },
+    E: { checks: ["تفقد الإصابات الأخرى."], actions: ["غطّ المصاب لتدفئته ولا تحركه إذا شكت بإصابة عمود فقري."] }
   },
   en: {
-    A: { checks: ["Is anything in the mouth or throat blocking the airway?"], actions: ["If they cannot speak or cough forcefully: call an ambulance, then give 5 back blows and 5 abdominal thrusts alternately."] },
-    B: { checks: ["Are they breathing? Watch the chest rise and fall.", "Is breathing fast or difficult?"], actions: ["If not breathing: call an ambulance and start CPR immediately.", "If breathing: keep them comfortable."] },
-    C: { checks: ["Is there bleeding? Where?", "Is the skin cold or pale?"], actions: ["Press firmly and continuously on any bleeding with a clean cloth."] },
-    D: { checks: ["Is the person awake and responding to speech?"], actions: ["If unresponsive but breathing: place them in the recovery position (on their side)."] },
-    E: { checks: ["Are there other injuries?", "Is the body very cold or very hot?"], actions: ["Cover them if cold. Do not move them if a neck or back injury is possible."] }
+    A: { checks: ["Ensure the airway is clear."], actions: ["If choking: alternate 5 back blows and 5 abdominal thrusts."] },
+    B: { checks: ["Watch chest rise and breathing."], actions: ["If not breathing: start CPR immediately."] },
+    C: { checks: ["Check for visible bleeding."], actions: ["Apply firm direct pressure with a clean cloth."] },
+    D: { checks: ["Check responsiveness to voice."], actions: ["If unresponsive but breathing: place in recovery position."] },
+    E: { checks: ["Check for other injuries."], actions: ["Keep warm and avoid moving if spine injury is suspected."] }
   }
 };
 
-// Reads the JSON object in the AI answer. Removes code fences and trailing commas if they are there.
 function parseJSON(text) {
   const cleaned = text.replace(/```(?:json)?/gi, "").trim();
   const start = cleaned.indexOf("{");
@@ -148,7 +142,6 @@ function parseJSON(text) {
   return JSON.parse(cleaned.slice(start, end + 1).replace(/,\s*([}\]])/g, "$1"));
 }
 
-// Makes sure every field exists and has the right type before the page uses it.
 function normalize(d) {
   const sec = (x) => ({
     checks: Array.isArray(x?.checks) ? x.checks.map(String) : [],
@@ -162,34 +155,43 @@ function normalize(d) {
   };
 }
 
-// General plan with the error code, so the page is never empty.
 function fallbackAnalysis(userText, code) {
   const lower = userText.toLowerCase();
   const danger = DANGER_WORDS.some((w) => lower.includes(w));
+  const langKey = isArabicText(userText) ? "ar" : "en";
   return {
-    ...ABCDE_FALLBACK[getLang()],
+    ...ABCDE_FALLBACK[langKey],
     triage: danger ? "immediate" : "urgent",
     summary: t(danger ? "fallbackDanger" : "fallbackSafe"),
     notes: [t("aiOff") + " [" + code + "]"]
   };
 }
 
-// Main entry: returns a result the page can show, from the AI or from the fallback.
 async function analyzeCase(userText) {
   const started = Date.now();
-  const replyIn = getLang() === "ar" ? "simple Arabic (Egyptian dialect is fine)" : "simple English";
+  const inputIsAr = isArabicText(userText);
+  const replyIn = inputIsAr ? "clear, concise Egyptian Arabic ONLY" : "clear, concise English ONLY";
   const knowledge = SCENARIOS.map((s) => `- ${s.title}: ${s.keyPoint}`).join("\n");
+
   try {
     const raw = await callAI([
       {
         role: "system",
-        content: `You are an emergency first-aid assistant on a training website. Follow the ABCDE order (Airway, Breathing, Circulation, Disability, Exposure) and use the knowledge base below plus standard first-aid principles. Reply with ONLY a JSON object, no markdown and no extra text, with these keys: "triage" (one of "immediate", "urgent", "delayed", "minor"), "summary" (1-2 short sentences), "A", "B", "C", "D", "E" (each an object with "checks" and "actions" arrays of short strings), and "notes" (array of short strings). Write every string in ${replyIn}. If the case could be life-threatening, set triage to "immediate" and tell the user to call the emergency number ${emergencyNo()}. Never diagnose and never give medication doses. Keep it short: at most 2 checks and 2 actions per section, each under 15 words, one-sentence summary, at most 1 note. Use ONLY the facts written in the user's description. Do not invent injuries, amputations, or symptoms that are not written there. A cut (جرح) is not an amputation unless the text clearly says a body part was completely cut off. A shallow cut with light bleeding that stops with pressure is triage \"minor\": give first-aid steps only, and do not tell them to call an ambulance. Call an ambulance only for real danger signs: heavy or uncontrolled bleeding, no breathing, unresponsive, chest pain, severe breathing difficulty, or a major injury.\n\nKnowledge base:\n${knowledge}`
+        content: `You are an emergency first-aid assistant. Reply with ONLY a valid JSON object (no markdown) with keys: "triage" ("immediate"|"urgent"|"delayed"|"minor"), "summary" (1 concise sentence), "A", "B", "C", "D", "E" (each having "checks" and "actions" arrays), and "notes" (array).
+CRITICAL RULES:
+1. Write ALL string values strictly in ${replyIn}. Ignore UI language; match the user's input language.
+2. Keep the answer STRICTLY concise and focused ONLY on the exact problem described by the user. Do NOT add generic filler or unrelated steps. Put empty arrays [] for ABCDE letters not directly relevant, or 1 ultra-short point (max 12 words) per check/action.
+3. Call emergency number ${emergencyNo()} ONLY if life-threatening (heavy bleeding, choking, unresponsive, no breathing, chest pain).
+4. Never invent symptoms or injuries not stated in the user's text.
+
+Knowledge base:\n${knowledge}`
       },
       { role: "user", content: userText }
     ], { json: true });
+
     const result = normalize(parseJSON(raw));
     const secs = ((Date.now() - started) / 1000).toFixed(1);
-    result.notes.push((getLang() === "ar" ? "وقت الرد: " : "Response time: ") + secs + "s");
+    result.notes.push((inputIsAr ? "وقت الرد: " : "Response time: ") + secs + "s");
     return result;
   } catch (err) {
     console.warn("AI analysis unavailable:", err.message);
