@@ -11,6 +11,14 @@
     return /[\u0600-\u06FF]/.test(String(txt || ""));
   }
 
+  function pageLang() {
+    return document.documentElement.lang === "en" ? "en" : "ar";
+  }
+
+  function isDarkTheme() {
+    return document.documentElement.dataset.theme === "dark";
+  }
+
   function ytLink(id) {
     return "https:/" + "/www.youtube.com/watch?v=" + id;
   }
@@ -190,34 +198,77 @@
   fab.type = "button";
   fab.setAttribute("aria-label", "AI First-Aid Assistant");
   fab.innerHTML = "💬";
+  // مرفوع فوق زرار الطوارئ الأحمر لمنع التداخل في أسفل اليسار
   fab.style.cssText =
-    "position:fixed;bottom:20px;left:20px;z-index:9999;width:56px;height:56px;border-radius:50%;border:none;background:#0066CC;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;";
+    "position:fixed;bottom:78px;left:20px;z-index:9999;width:54px;height:54px;border-radius:50%;border:none;background:#0066CC;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;";
 
   const panel = document.createElement("div");
   panel.id = "ai-chat-panel";
   panel.style.cssText =
-    "position:fixed;bottom:86px;left:20px;z-index:9999;width:min(360px,calc(100vw - 40px));max-height:72vh;background:var(--card,#161b22);color:var(--text,#f0f6fc);border:1px solid var(--border,#30363d);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,0.45);display:none;flex-direction:column;overflow:hidden;";
+    "position:fixed;bottom:142px;left:20px;z-index:9999;width:min(360px,calc(100vw - 40px));max-height:calc(100vh - 170px);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.25);display:none;flex-direction:column;overflow:hidden;transition:background-color 0.2s,color 0.2s,border-color 0.2s;";
 
   panel.innerHTML = `
-    <div style="padding:12px 14px;background:#0066CC;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;">
-      <span>🤖 مساعد الإسعافات الذكي</span>
+    <div id="ai-chat-header" style="padding:11px 14px;background:#0066CC;color:#ffffff;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span id="ai-chat-title">🤖 مساعد الإسعافات الذكي</span>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button id="ai-chat-clear" type="button" title="مسح المحادثة" style="background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer;">مسح</button>
-        <button id="ai-chat-close" type="button" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+        <button id="ai-chat-clear" type="button" style="background:rgba(255,255,255,0.22);border:none;color:#ffffff;font-size:12px;padding:4px 9px;border-radius:6px;cursor:pointer;font-weight:600;">مسح</button>
+        <button id="ai-chat-close" type="button" style="background:none;border:none;color:#ffffff;font-size:18px;cursor:pointer;line-height:1;">✕</button>
       </div>
     </div>
-    <div id="ai-chat-msgs" style="padding:12px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.65;min-height:180px;">
-      <div style="background:rgba(0,102,204,0.15);padding:8px 10px;border-radius:10px;">أهلاً بك! اسألني عن أي حالة إسعافات أولية وسأعطيك الخطوات المناسبة وفيديو الشرح.</div>
+    <div id="ai-chat-msgs" style="padding:12px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:9px;font-size:14px;line-height:1.65;min-height:180px;">
+      <div class="ai-bot-msg" style="padding:9px 11px;border-radius:10px;">أهلاً بك! اسألني عن أي حالة إسعافات أولية وسأعطيك الخطوات المناسبة وفيديو الشرح.</div>
     </div>
-    <form id="ai-chat-form" style="display:flex;border-top:1px solid var(--border,#30363d);">
-      <input id="ai-chat-input" type="text" placeholder="اكتب سؤالك هنا..." style="flex:1;padding:10px;border:none;background:transparent;color:inherit;outline:none;" />
-      <button type="submit" style="padding:0 14px;background:#0066CC;color:#fff;border:none;cursor:pointer;font-weight:600;">إرسال</button>
+    <form id="ai-chat-form" style="display:flex;border-top:1px solid #d0d7de;">
+      <input id="ai-chat-input" type="text" placeholder="اكتب سؤالك هنا..." style="flex:1;padding:10px 12px;border:none;background:transparent;color:inherit;outline:none;font-size:14px;" />
+      <button id="ai-chat-send" type="submit" style="padding:0 15px;background:#0066CC;color:#ffffff;border:none;cursor:pointer;font-weight:600;font-size:14px;">إرسال</button>
     </form>
   `;
 
   document.body.append(fab, panel);
 
+  const msgs = panel.querySelector("#ai-chat-msgs");
+  const form = panel.querySelector("#ai-chat-form");
+  const input = panel.querySelector("#ai-chat-input");
+  const titleEl = panel.querySelector("#ai-chat-title");
+  const clearBtn = panel.querySelector("#ai-chat-clear");
+  const sendBtn = panel.querySelector("#ai-chat-send");
+
+  function syncChatAppearance() {
+    const dark = isDarkTheme();
+    const en = pageLang() === "en";
+
+    panel.dir = en ? "ltr" : "rtl";
+    panel.style.backgroundColor = dark ? "#1e242c" : "#ffffff";
+    panel.style.color = dark ? "#f0f6fc" : "#1f2328";
+    panel.style.border = dark ? "1px solid #363f4a" : "1px solid #d0d7de";
+    form.style.borderTop = dark ? "1px solid #363f4a" : "1px solid #d0d7de";
+
+    titleEl.textContent = en ? "🤖 AI First-Aid Assistant" : "🤖 مساعد الإسعافات الذكي";
+    clearBtn.textContent = en ? "Clear" : "مسح";
+    sendBtn.textContent = en ? "Send" : "إرسال";
+    input.placeholder = en ? "Type your question here..." : "اكتب سؤالك هنا...";
+
+    panel.querySelectorAll(".ai-bot-msg").forEach(function (el) {
+      el.style.backgroundColor = dark ? "#2a323d" : "#f1f5f9";
+      el.style.color = dark ? "#f0f6fc" : "#1f2328";
+      el.style.border = dark ? "1px solid #3b4452" : "1px solid #e2e8f0";
+    });
+
+    panel.querySelectorAll(".ai-yt-link").forEach(function (a) {
+      a.style.color = dark ? "#6cb6ff" : "#0056b3";
+    });
+  }
+
+  const themeObserver = new MutationObserver(syncChatAppearance);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme", "lang", "dir"]
+  });
+
+  syncChatAppearance();
+
   fab.addEventListener("click", function () {
+    syncChatAppearance();
     panel.style.display = panel.style.display === "none" ? "flex" : "none";
   });
 
@@ -225,13 +276,14 @@
     panel.style.display = "none";
   });
 
-  const msgs = panel.querySelector("#ai-chat-msgs");
-  const form = panel.querySelector("#ai-chat-form");
-  const input = panel.querySelector("#ai-chat-input");
-
-  panel.querySelector("#ai-chat-clear").addEventListener("click", function () {
+  clearBtn.addEventListener("click", function () {
     chatHistory.length = 0;
-    msgs.innerHTML = '<div style="background:rgba(0,102,204,0.15);padding:8px 10px;border-radius:10px;">تم مسح المحادثة. اكتب سؤالك الجديد الآن.</div>';
+    const en = pageLang() === "en";
+    msgs.innerHTML =
+      '<div class="ai-bot-msg" style="padding:9px 11px;border-radius:10px;">' +
+      (en ? "Chat cleared. Ask your next first-aid question." : "تم مسح المحادثة. اكتب سؤالك الجديد الآن.") +
+      "</div>";
+    syncChatAppearance();
   });
 
   form.addEventListener("submit", async function (e) {
@@ -243,15 +295,19 @@
 
     const userBubble = document.createElement("div");
     userBubble.textContent = q;
-    userBubble.style.cssText = "align-self:flex-end;background:#0066CC;color:#fff;padding:8px 10px;border-radius:10px;max-width:85%;";
+    userBubble.style.cssText =
+      "align-self:flex-end;background:#0066CC;color:#ffffff;padding:8px 11px;border-radius:10px;max-width:85%;";
     msgs.append(userBubble);
 
     const botBubble = document.createElement("div");
-    botBubble.style.cssText = "align-self:flex-start;background:rgba(128,128,128,0.18);padding:10px 12px;border-radius:10px;max-width:92%;display:flex;flex-direction:column;gap:6px;";
+    botBubble.className = "ai-bot-msg";
+    botBubble.style.cssText =
+      "align-self:flex-start;padding:10px 12px;border-radius:10px;max-width:92%;display:flex;flex-direction:column;gap:6px;";
     const loadingText = document.createElement("div");
     loadingText.textContent = arabic ? "جاري تحليل سؤالك..." : "Analyzing your question...";
     botBubble.append(loadingText);
     msgs.append(botBubble);
+    syncChatAppearance();
     msgs.scrollTop = msgs.scrollHeight;
 
     let finalLines = [];
@@ -289,13 +345,15 @@
     });
 
     const link = document.createElement("a");
+    link.className = "ai-yt-link";
     link.href = topicMatch.ytUrl;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "▶ " + topicMatch.ytText + " ↗";
-    link.style.cssText = "color:#4da3ff;font-weight:700;text-decoration:underline;margin-top:4px;";
+    link.style.cssText = "font-weight:700;text-decoration:underline;margin-top:4px;";
     botBubble.append(link);
 
+    syncChatAppearance();
     msgs.scrollTop = msgs.scrollHeight;
   });
 })();
