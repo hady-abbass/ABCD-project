@@ -15,10 +15,9 @@
     return "https:/" + "/www.youtube.com/watch?v=" + id;
   }
 
-  // قاعدة معرفة شاملة لأي حالة + رابط فيديو عملي مناسب لكل حالة
   const TOPICS = [
     {
-      keys: ["صباع", "مقطوع", "بتر", "نزيف", "قطع", "جرح", "دم", "bleed", "cut", "wound", "amputat"],
+      keys: ["صباع", "مقطوع", "بتر", "نزيف", "بينزف", "قطع", "جرح", "دم", "bleed", "cut", "wound", "amputat"],
       ytAr: "_ofcOGEsa7c",
       ytEn: "NxO5LvgqZe0",
       labelAr: "فيديو شرح إيقاف النزيف والجروح",
@@ -144,6 +143,56 @@
     };
   }
 
+  // استدعاء مباشر للـ endpoint في CONFIG لتفادي أي تعارض في callAI
+  async function askDirectAI(q) {
+    if (typeof CONFIG === "undefined" || !CONFIG.ai || !CONFIG.ai.enabled || !CONFIG.ai.endpoint) {
+      throw new Error("NO_ENDPOINT");
+    }
+    const headers = { "Content-Type": "application/json" };
+    const key = (CONFIG.ai.apiKey || "").trim();
+    if (key && !key.startsWith("PASTE_")) {
+      headers.Authorization = "Bearer " + key;
+    }
+    const sysPrompt = isAr(q)
+      ? "أنت مساعد إسعافات أولية ذكي. أجب باللهجة المصرية الواضحة في 3 إلى 4 نقاط مرقمة (1- 2- 3-) تشرح ماذا يفعل المسعف بالضبط، بدون رموز ماركداون (* أو #)."
+      : "You are a first-aid assistant. Reply in clear English in 3 to 4 numbered steps (1- 2- 3-) explaining what to do, without markdown symbols (* or #).";
+
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, 12000);
+    try {
+      const res = await fetch(CONFIG.ai.endpoint, {
+        method: "POST",
+        headers: headers,
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: CONFIG.ai.model,
+          messages: [
+            { role: "system", content: sysPrompt },
+            { role: "user", content: q }
+          ],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      });
+      if (!res.ok) throw new Error("HTTP_" + res.status);
+      const data = await res.json();
+      const content =
+        data &&
+        data.choices &&
+        data.choices[0] &&
+        data.choices[0].message &&
+        data.choices[0].message.content;
+      if (!content) throw new Error("EMPTY");
+      return String(content)
+        .replace(/[*#_`~]/g, "")
+        .split(/\r?\n/)
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   const fab = document.createElement("button");
   fab.id = "ai-fab";
   fab.type = "button";
@@ -198,38 +247,28 @@
 
     const botBubble = document.createElement("div");
     botBubble.style.cssText = "align-self:flex-start;background:rgba(128,128,128,0.18);padding:10px 12px;border-radius:10px;max-width:92%;display:flex;flex-direction:column;gap:6px;";
+    const loadingText = document.createElement("div");
+    loadingText.textContent = isAr(q) ? "جاري الاتصال بالمساعد الذكي..." : "Connecting to AI assistant...";
+    botBubble.append(loadingText);
+    msgs.append(botBubble);
+    msgs.scrollTop = msgs.scrollHeight;
 
-    let built = buildSmartReply(q);
+    const built = buildSmartReply(q);
+    let finalLines = built.lines;
+    let usedAI = false;
 
-    // محاولة إثراء الرد بالـ AI إذا كان متاحاً وسريعاً دون تعليق أو رسائل خطأ
-    if (typeof callAI === "function") {
-      try {
-        const aiText = await Promise.race([
-          callAI([
-            {
-              role: "system",
-              content: isAr(q)
-                ? "أجب باللهجة المصرية الواضحة في 3 إلى 4 نقاط مرقمة (1- 2- 3-) تشرح ماذا يفعل المسعف بالضبط، بدون رموز ماركداون."
-                : "Reply in clear English in 3 to 4 numbered steps (1- 2- 3-) explaining what to do, without markdown symbols."
-            },
-            { role: "user", content: q }
-          ]),
-          new Promise(function (_, reject) { setTimeout(function () { reject(new Error("TIMEOUT")); }, 4500); })
-        ]);
-        const cleanLines = String(aiText || "")
-          .replace(/[*#_`~]/g, "")
-          .split(/\r?\n/)
-          .map(function (s) { return s.trim(); })
-          .filter(Boolean);
-        if (cleanLines.length >= 2) {
-          built.lines = cleanLines;
-        }
-      } catch (_) {
-        // نحتفظ بالخطوات الجاهزة الدقيقة بدون إظهار أي رسالة خطأ للمستخدم
+    try {
+      const aiLines = await askDirectAI(q);
+      if (aiLines && aiLines.length >= 2) {
+        finalLines = aiLines;
+        usedAI = true;
       }
+    } catch (_) {
+      finalLines = built.lines;
     }
 
-    built.lines.forEach(function (line) {
+    botBubble.replaceChildren();
+    finalLines.forEach(function (line) {
       const p = document.createElement("div");
       p.textContent = line;
       botBubble.append(p);
@@ -243,7 +282,13 @@
     link.style.cssText = "color:#4da3ff;font-weight:700;text-decoration:underline;margin-top:4px;";
     botBubble.append(link);
 
-    msgs.append(botBubble);
+    const tag = document.createElement("div");
+    tag.textContent = usedAI
+      ? (isAr(q) ? "رد مباشر عبر AI" : "Live AI response")
+      : (isAr(q) ? "دليل إسعافي فوري" : "Instant first-aid guide");
+    tag.style.cssText = "font-size:11px;opacity:0.7;margin-top:2px;";
+    botBubble.append(tag);
+
     msgs.scrollTop = msgs.scrollHeight;
   });
 })();
