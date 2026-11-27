@@ -1,17 +1,32 @@
-// app.js: permanent ABCDE overview, real-photo quick cards above input, concise results + YouTube links, and photo-rich library.
+// app.js: permanent ABCDE overview, auto-analyzing real-photo cards, fixed YouTube links, and photo-rich library.
 
 const app = document.getElementById("app");
 let lastCase = "";
 
 const LOGO_SVG = `<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#ffffff"/><path d="M19 6h10v11h11v10H29v11H19V27H8V17h11z" fill="#0066CC"/><path d="M4 42h10l3-5 4 9 4-7 3 3h16" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-// ربط الحالات بالصور الحقيقية (من فولدر images/) وفيديوهات يوتيوب الموثوقة (عربي وإنجليزي)
+// بناء روابط يوتيوب بشكل آمن يمنع تشوهها عند النسخ واللصق
+const YT_WATCH_BASE = ["https:/", "www.youtube.com/watch?v="].join("/");
+const YT_IMG_BASE = ["https:/", "i.ytimg.com/vi/"].join("/");
+
+function ytWatchUrl(videoId) {
+  return YT_WATCH_BASE + videoId;
+}
+
+function ytThumbUrl(videoId) {
+  return YT_IMG_BASE + videoId + "/hqdefault.jpg";
+}
+
+// ربط الحالات بصورك الحقيقية (سواء بالاسم المختصر أو الاسم الأصلي المرفوع) وفيديوهات يوتيوب
 const MEDIA_MAP = {
   choking: {
-    img: "images/choking.webp",
-    fallbackImg: "[https://i.ytimg.com/vi/HGBBu4zr8sM/hqdefault.jpg](https://i.ytimg.com/vi/HGBBu4zr8sM/hqdefault.jpg)",
-    ytAr: "[https://www.youtube.com/watch?v=81BXd2Gi6kg](https://www.youtube.com/watch?v=81BXd2Gi6kg)",
-    ytEn: "[https://www.youtube.com/watch?v=HGBBu4zr8sM](https://www.youtube.com/watch?v=HGBBu4zr8sM)",
+    srcs: [
+      "images/choking.webp",
+      "images/1000_F_233179021_W3oUrTc4MTjTZZvC1KMANt3Z9jEqZUew.webp",
+      ytThumbUrl("HGBBu4zr8sM")
+    ],
+    ytAr: "81BXd2Gi6kg",
+    ytEn: "HGBBu4zr8sM",
     titleAr: "إسعاف الاختناق (مناورة هيمليك والضربات الظهرية)",
     titleEn: "Choking First Aid (Back Blows & Heimlich)",
     descAr: "5 ضربات بين لوحي الكتف بالتبادل مع 5 ضغطات بطنية أعلى السرة.",
@@ -19,10 +34,13 @@ const MEDIA_MAP = {
     keys: ["اختناق", "شرق", "بلع", "مجرى الهواء", "choking", "heimlich", "airway"]
   },
   bleeding: {
-    img: "images/bleeding.jpg",
-    fallbackImg: "[https://i.ytimg.com/vi/NxO5LvgqZe0/hqdefault.jpg](https://i.ytimg.com/vi/NxO5LvgqZe0/hqdefault.jpg)",
-    ytAr: "[https://www.youtube.com/watch?v=_ofcOGEsa7c](https://www.youtube.com/watch?v=_ofcOGEsa7c)",
-    ytEn: "[https://www.youtube.com/watch?v=NxO5LvgqZe0](https://www.youtube.com/watch?v=NxO5LvgqZe0)",
+    srcs: [
+      "images/bleeding.jpg",
+      "images/pexels-rdne-6520110.jpg",
+      ytThumbUrl("NxO5LvgqZe0")
+    ],
+    ytAr: "_ofcOGEsa7c",
+    ytEn: "NxO5LvgqZe0",
     titleAr: "إيقاف النزيف وتضميد الجروح",
     titleEn: "Bleeding Control & Wound Dressing",
     descAr: "اضغط مباشرة بشاش معقم بقوة وارفع الطرف المصاب فوق مستوى القلب.",
@@ -30,10 +48,13 @@ const MEDIA_MAP = {
     keys: ["نزيف", "قطع", "جرح", "دم", "صباع", "bleeding", "cut", "wound", "circulation"]
   },
   unresponsive: {
-    img: "images/recovery.jpg",
-    fallbackImg: "[https://i.ytimg.com/vi/GmqXqwSV3bo/hqdefault.jpg](https://i.ytimg.com/vi/GmqXqwSV3bo/hqdefault.jpg)",
-    ytAr: "[https://www.youtube.com/watch?v=6ZmWhzrfPPY](https://www.youtube.com/watch?v=6ZmWhzrfPPY)",
-    ytEn: "[https://www.youtube.com/watch?v=GmqXqwSV3bo](https://www.youtube.com/watch?v=GmqXqwSV3bo)",
+    srcs: [
+      "images/recovery.jpg",
+      "images/pexels-mikhail-nilov-8942737.jpg",
+      ytThumbUrl("GmqXqwSV3bo")
+    ],
+    ytAr: "6ZmWhzrfPPY",
+    ytEn: "GmqXqwSV3bo",
     titleAr: "فقدان الوعي ووضعية الإفاقة",
     titleEn: "Unresponsive & Recovery Position",
     descAr: "تأكد من التنفس، اقلب المصاب على جانبه لفتح مجرى الهواء، واطلب الإسعاف.",
@@ -41,10 +62,13 @@ const MEDIA_MAP = {
     keys: ["إغماء", "فاقد", "غيبوبة", "الإفاقة", "وقع", "unconscious", "unresponsive", "faint", "recovery"]
   },
   cpr: {
-    img: "images/cpr.jpg",
-    fallbackImg: "[https://i.ytimg.com/vi/BQNNOh8c8ks/hqdefault.jpg](https://i.ytimg.com/vi/BQNNOh8c8ks/hqdefault.jpg)",
-    ytAr: "[https://www.youtube.com/watch?v=JIFt-55TRGk](https://www.youtube.com/watch?v=JIFt-55TRGk)",
-    ytEn: "[https://www.youtube.com/watch?v=BQNNOh8c8ks](https://www.youtube.com/watch?v=BQNNOh8c8ks)",
+    srcs: [
+      "images/cpr.jpg",
+      "images/pexels-tahir-33029223.jpg",
+      ytThumbUrl("BQNNOh8c8ks")
+    ],
+    ytAr: "JIFt-55TRGk",
+    ytEn: "BQNNOh8c8ks",
     titleAr: "الإنعاش القلبي الرئوي (CPR)",
     titleEn: "Cardiopulmonary Resuscitation (CPR)",
     descAr: "30 ضغطة في منتصف الصدر بعمق 5-6 سم تليها نفسان إنقاذيان.",
@@ -52,10 +76,12 @@ const MEDIA_MAP = {
     keys: ["قلب", "نبض", "تنفس", "إنعاش", "توقف", "cpr", "cardiac", "pulse", "breathing"]
   },
   burns: {
-    img: "[https://i.ytimg.com/vi/6i7ov4vbxUc/hqdefault.jpg](https://i.ytimg.com/vi/6i7ov4vbxUc/hqdefault.jpg)",
-    fallbackImg: "[https://i.ytimg.com/vi/6i7ov4vbxUc/hqdefault.jpg](https://i.ytimg.com/vi/6i7ov4vbxUc/hqdefault.jpg)",
-    ytAr: "[https://www.youtube.com/watch?v=HaC2oiBB7sI](https://www.youtube.com/watch?v=HaC2oiBB7sI)",
-    ytEn: "[https://www.youtube.com/watch?v=6i7ov4vbxUc](https://www.youtube.com/watch?v=6i7ov4vbxUc)",
+    srcs: [
+      "images/burns.jpg",
+      ytThumbUrl("6i7ov4vbxUc")
+    ],
+    ytAr: "HaC2oiBB7sI",
+    ytEn: "6i7ov4vbxUc",
     titleAr: "إسعاف الحروق الحرارية",
     titleEn: "Thermal Burns First Aid",
     descAr: "برّد الحرق بماء جارٍ فاتر 20 دقيقة وغطِّه بشاش نظيف غير لاصق.",
@@ -65,6 +91,21 @@ const MEDIA_MAP = {
 };
 
 const LIBRARY_GALLERY_KEYS = ["choking", "bleeding", "unresponsive", "cpr"];
+
+// تحميل الصورة مع تجربة كل المسارات المحتملة تلقائياً
+function setSmartImage(img, media, altText) {
+  let index = 0;
+  img.alt = altText;
+  img.src = media.srcs[0];
+  img.onerror = () => {
+    index += 1;
+    if (index < media.srcs.length) {
+      img.src = media.srcs[index];
+    } else {
+      img.onerror = null;
+    }
+  };
+}
 
 function matchMediaForText(text) {
   const lower = String(text || "").toLowerCase();
@@ -98,7 +139,6 @@ function safetyNotice() {
   return make("p", "notice", t("notice") + emergencyNo());
 }
 
-// 1. البانر الرئيسي
 function hero() {
   const box = make("section", "hero");
   const logo = make("div", "hero-logo");
@@ -107,7 +147,7 @@ function hero() {
   return box;
 }
 
-// 2. خطوات ABCDE الأساسية (موجودة دائماً في أعلى الصفحة قبل وصف الحالة)
+// خطوات ABCDE الثابتة في أول الصفحة
 function abcdeOverviewSection() {
   const en = getLang() === "en";
   const wrap = make("section", "abcde-overview");
@@ -140,13 +180,10 @@ function abcdeOverviewSection() {
   return wrap;
 }
 
-// بناء كارت الصورة الحقيقية + لينك يوتيوب
 function buildMediaCard(media, useArabic) {
   const card = make("div", "media-guide-card");
   const img = make("img");
-  img.src = media.img;
-  img.alt = useArabic ? media.titleAr : media.titleEn;
-  img.onerror = () => { img.src = media.fallbackImg; };
+  setSmartImage(img, media, useArabic ? media.titleAr : media.titleEn);
 
   const info = make("div", "media-guide-info");
   info.append(
@@ -155,7 +192,7 @@ function buildMediaCard(media, useArabic) {
   );
 
   const ytLink = make("a", "btn btn-yt", useArabic ? "▶ شاهد الشرح العملي على يوتيوب ↗" : "▶ Watch Video Tutorial on YouTube ↗");
-  ytLink.href = useArabic ? media.ytAr : media.ytEn;
+  ytLink.href = ytWatchUrl(useArabic ? media.ytAr : media.ytEn);
   ytLink.target = "_blank";
   ytLink.rel = "noopener noreferrer";
   info.append(ytLink);
@@ -171,7 +208,6 @@ function localCase(raw) {
     : { title: raw.title, setting: raw.setting };
 }
 
-// عرض النتيجة المختصرة مع الصورة الحقيقية وفيديو اليوتيوب المناسب للحالة
 function renderResult(a, userText) {
   const useAr = /[\u0600-\u06FF]/.test(userText);
   const box = make("section", "result");
@@ -215,7 +251,25 @@ function showHome() {
   const quickPreview = make("div");
   const result = make("div");
 
-  // البطاقات السريعة بالصور الحقيقية (موجودة فوق مربع الوصف مباشرة)
+  async function runAnalysis() {
+    const text = input.value.trim();
+    if (!text) {
+      statusMsg.textContent = t("emptyCase");
+      return;
+    }
+    lastCase = text;
+    quickPreview.replaceChildren();
+    analyzeBtn.disabled = true;
+    statusMsg.textContent = t("analyzing");
+    const analysis = await analyzeCase(text);
+    analyzeBtn.disabled = false;
+    statusMsg.textContent = "";
+    result.replaceChildren(renderResult(analysis, text));
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  analyzeBtn.addEventListener("click", runAnalysis);
+
   const examples = make("div", "examples");
   const quickCases = [
     { id: "choking", media: MEDIA_MAP.choking, raw: SCENARIOS.find((s) => s.id === "choking") },
@@ -242,14 +296,12 @@ function showHome() {
     const b = make("button", "case-card");
     b.type = "button";
     const img = make("img", "case-thumb");
-    img.src = item.media.img;
-    img.alt = c.title;
-    img.onerror = () => { img.src = item.media.fallbackImg; };
+    setSmartImage(img, item.media, c.title);
 
     const body = make("div", "case-card-body");
     body.append(
       make("span", "case-name", c.title),
-      make("span", "case-hint", en ? "Click for photo, video & steps" : "اضغط للصورة والفيديو والخطوات")
+      make("span", "case-hint", en ? "Click for instant steps & video" : "اضغط للتحليل الفوري والفيديو")
     );
     b.append(img, body);
 
@@ -258,31 +310,12 @@ function showHome() {
       b.classList.add("active");
       input.value = c.setting;
       lastCase = c.setting;
-      quickPreview.replaceChildren(buildMediaCard(item.media, !en));
-      input.focus();
+      runAnalysis();
     });
     examples.append(b);
     return b;
   });
 
-  analyzeBtn.addEventListener("click", async () => {
-    const text = input.value.trim();
-    if (!text) {
-      statusMsg.textContent = t("emptyCase");
-      return;
-    }
-    lastCase = text;
-    quickPreview.replaceChildren();
-    analyzeBtn.disabled = true;
-    statusMsg.textContent = t("analyzing");
-    const analysis = await analyzeCase(text);
-    analyzeBtn.disabled = false;
-    statusMsg.textContent = "";
-    result.replaceChildren(renderResult(analysis, text));
-    result.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  // مربع وصف الحالة
   const caseBox = make("section", "case-box-wrapper");
   caseBox.append(
     make("h2", "", t("caseTitle")),
@@ -304,7 +337,7 @@ function showHome() {
   );
 }
 
-// ----- المكتبة: صور حقيقية + فيديوهات يوتيوب بدون رسومات خطية -----
+// ----- المكتبة: صور حقيقية + فيديوهات يوتيوب -----
 const AGE_LABELS = { child: "طفل", infant: "رضيع", elderly: "كبير السن" };
 
 function findTopic(id) {
@@ -329,9 +362,7 @@ function showLibrary() {
     c.href = "#section/" + sec.id;
     const coverMedia = SECTION_COVERS[sec.id] || MEDIA_MAP.cpr;
     const img = make("img", "card-cover");
-    img.src = coverMedia.img;
-    img.alt = sec.title;
-    img.onerror = () => { img.src = coverMedia.fallbackImg; };
+    setSmartImage(img, coverMedia, sec.title);
     c.append(img, make("h2", "", sec.title), make("p", "", sec.intro));
     grid.append(c);
   });
@@ -353,9 +384,7 @@ function showSection(id) {
     const mediaKey = tp.gallery !== undefined ? LIBRARY_GALLERY_KEYS[tp.gallery] : "unresponsive";
     const media = MEDIA_MAP[mediaKey] || MEDIA_MAP.cpr;
     const img = make("img", "card-cover");
-    img.src = media.img;
-    img.alt = tp.title;
-    img.onerror = () => { img.src = media.fallbackImg; };
+    setSmartImage(img, media, tp.title);
     c.append(img, make("h2", "", tp.title), make("p", "", tp.summary));
     grid.append(c);
   });
@@ -400,56 +429,4 @@ function showTopic(id) {
     body.append(make("h2", "", tab.title), listOf(tab.steps));
     if (tab.note) body.append(make("p", "notice", tab.note));
   };
-  show(tabs[0], buttons[0]);
-
-  render(back, make("h1", "", topic.title), make("p", "", topic.summary), tabsRow, body, safetyNotice());
-}
-
-function route() {
-  const [page, id] = location.hash.replace("#", "").split("/");
-  if (page === "library" || page === "reference") showLibrary();
-  else if (page === "section") showSection(id);
-  else if (page === "topic") showTopic(id);
-  else showHome();
-}
-
-const THEME_KEY = "firstaid-theme";
-
-function getTheme() {
-  try {
-    return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
-  } catch (err) {
-    return "light";
-  }
-}
-
-function applyTheme(theme) {
-  const current = theme || document.documentElement.dataset.theme || getTheme();
-  document.documentElement.dataset.theme = current;
-  document.getElementById("theme-toggle").textContent = t(current === "dark" ? "themeToLight" : "themeToDark");
-}
-
-document.getElementById("theme-toggle").addEventListener("click", () => {
-  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-  try {
-    localStorage.setItem(THEME_KEY, next);
-  } catch (err) {
-    console.warn("Theme not saved:", err.message);
-  }
-  applyTheme(next);
-});
-
-document.getElementById("lang-toggle").addEventListener("click", () => {
-  setLang(getLang() === "ar" ? "en" : "ar");
-  applyLang();
-  applyTheme();
-  route();
-});
-
-document.getElementById("emergency-number").textContent = emergencyNo();
-document.getElementById("sos").href = "tel:" + emergencyNo();
-document.getElementById("sos-num").textContent = emergencyNo();
-applyLang();
-applyTheme(getTheme());
-window.addEventListener("hashchange", route);
-route();
+  show(tabs[0], buttons[0
