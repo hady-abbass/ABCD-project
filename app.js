@@ -108,7 +108,7 @@ const I18N_FALLBACK = {
     checksTitle: "Check:",
     actionsTitle: "Action:",
     libTitle: "First-Aid Library",
-    libSub: "Select a section and condition to view step-by-step instructions and video tutorials.",
+    libSub: "Select a section and condition to view step-by-step instructions and video tutorials for every age group.",
     backLib: "← Library",
     backSec: "← Back"
   }
@@ -129,99 +129,372 @@ function safeT(key) {
   return dict[key] || I18N_FALLBACK.ar[key] || key;
 }
 
-const LIBRARY_TRANSLATIONS = {
+const LIBRARY_EN = {
   sections: {
     assess: {
-      enTitle: "Primary Assessment",
-      enIntro: "First steps on scene: make sure the area is safe, assess the person quickly, and identify immediate threats."
+      title: "Primary Assessment",
+      intro: "First steps on scene: verify scene safety, evaluate responsiveness quickly, and spot immediate life threats."
     },
     vitals: {
-      enTitle: "Vital Signs",
-      enIntro: "Key measurements that help assess a person's condition, though numbers alone never rule out serious illness."
+      title: "Vital Signs",
+      intro: "Core measurements that help evaluate a patient's condition, though normal numbers never rule out serious illness."
     },
     emergencies: {
-      enTitle: "Emergency Conditions",
-      enIntro: "Time-critical emergencies requiring rapid action, with guidance across age groups."
+      title: "Emergency Conditions",
+      intro: "Time-critical emergencies requiring rapid action, with tailored guidance across age groups."
     }
   },
   topics: {
     abcde: {
-      enTitle: "ABCDE Primary Survey",
-      enSummary: "Systematic A-B-C-D-E check to detect and treat life threats in order of urgency."
+      title: "ABCDE Primary Survey",
+      summary: "Systematic A-B-C-D-E check to detect and treat life-threatening conditions in strict order of priority.",
+      steps: [
+        "Scene Safety: Check for traffic, fire, electricity, or hazards before approaching.",
+        "A — Airway: Check if the airway is open; use head-tilt chin-lift (or jaw-thrust if spinal injury is suspected) and clear visible obstructions.",
+        "B — Breathing: Look, listen, and feel for normal breathing for up to 10 seconds; start CPR if absent.",
+        "C — Circulation: Control severe external bleeding with firm direct pressure and check skin color, temperature, and pulse.",
+        "D — Disability: Assess consciousness level using AVPU and check pupil symmetry and limb movement.",
+        "E — Exposure: Expose injured areas to check for hidden trauma while protecting the person from hypothermia."
+      ],
+      note: "Always treat life-threatening problems at each step before moving to the next letter.",
+      ages: {
+        child: {
+          title: "ABCDE Primary Survey — Child (1–12 Years)",
+          steps: [
+            "Approach calmly at eye level while checking scene safety.",
+            "A — Airway: Open the airway with a gentle head tilt (neutral-to-sniffing position; avoid overextending the neck).",
+            "B — Breathing: Look for chest rise and nasal flaring or rib retractions for 10 seconds.",
+            "C — Circulation: Control bleeding immediately; check capillary refill time (should be under 2 seconds).",
+            "D — Disability: Check alertness and response to parents' voice.",
+            "E — Exposure: Keep the child warm immediately after checking for injuries."
+          ],
+          note: "Children compensate well at first but can deteriorate suddenly; seek urgent medical evaluation early."
+        },
+        infant: {
+          title: "ABCDE Primary Survey — Infant (Under 1 Year)",
+          steps: [
+            "Ensure scene safety and place the infant on a firm flat surface.",
+            "A — Airway: Keep the head in a neutral position (do not tilt far back, which can narrow an infant's airway).",
+            "B — Breathing: Watch abdominal/chest movement for 10 seconds; normal rate is faster than adults (30–60 breaths/min).",
+            "C — Circulation: Check brachial pulse (inner upper arm) and skin color; control any bleeding.",
+            "D — Disability: Check muscle tone, cry, and response to gentle stimulation.",
+            "E — Exposure: Infants lose body heat rapidly; cover promptly after examination."
+          ],
+          note: "Never hyperextend an infant's neck when opening the airway."
+        },
+        elderly: {
+          title: "ABCDE Primary Survey — Elderly Adult",
+          steps: [
+            "Ensure scene safety and speak clearly at close range.",
+            "A — Airway: Check for loose dentures that could block the airway, but leave well-fitting dentures in place.",
+            "B — Breathing: Count breathing rate and check for shortness of breath or wheezing.",
+            "C — Circulation: Check radial pulse and blood pressure; internal bleeding can occur after minor falls.",
+            "D — Disability: Compare current alertness with baseline; sudden confusion is a red flag.",
+            "E — Exposure: Prevent heat loss and check carefully for hip or head injuries after falls."
+          ],
+          note: "Older adults may take blood thinners or beta-blockers that mask shock or worsen bleeding."
+        }
+      }
     },
     avpu: {
-      enTitle: "AVPU Consciousness Scale",
-      enSummary: "Quick neurological check: Alert, Voice, Pain, or Unresponsive."
+      title: "AVPU Consciousness Scale",
+      summary: "Rapid bedside neurological scale to classify responsiveness: Alert, Voice, Pain, or Unresponsive.",
+      steps: [
+        "A — Alert: The person is awake, opens eyes spontaneously, and responds coherently.",
+        "V — Voice: Eyes open or body moves only when you speak loudly or ask a question.",
+        "P — Pain: Responds only to a gentle physical stimulus (such as a trapezius pinch or sternal rub).",
+        "U — Unresponsive: No eye opening, voice, or purposeful movement to voice or touch.",
+        "Action: Any patient scoring V, P, or U needs urgent airway protection and immediate emergency medical care."
+      ],
+      note: "Reassess AVPU every few minutes; dropping from A to V or P indicates worsening brain perfusion or hypoxia.",
+      ages: {
+        child: {
+          title: "AVPU Scale — Child",
+          steps: [
+            "Alert: Interacts normally with caregivers and recognizes surroundings.",
+            "Voice: Responds when called by name by a parent or rescuer.",
+            "Pain: Responds only to gentle physical stimulus.",
+            "Unresponsive: No response at all; open airway, check breathing, and call EMS immediately."
+          ],
+          note: "Unusual drowsiness or failure to recognize parents is a critical warning sign."
+        },
+        infant: {
+          title: "AVPU Scale — Infant",
+          steps: [
+            "Alert: Eyes open, tracks faces/objects, normal cry and movement.",
+            "Voice: Reacts to a loud sound or caregiver's voice.",
+            "Pain: Cries or withdraws only to gentle touch/pinch on the foot.",
+            "Unresponsive: Floppy, silent, no reaction; check breathing and call EMS immediately."
+          ],
+          note: "A weak, high-pitched cry or limp body requires immediate hospital care."
+        }
+      }
     },
     breathing_rate: {
-      enTitle: "Breathing Rate & Effort",
-      enSummary: "Count breaths per minute and watch for labored breathing or chest retractions."
+      title: "Breathing Rate & Effort",
+      summary: "Count breaths per minute and observe chest symmetry and work of breathing.",
+      steps: [
+        "Watch the chest rise and fall for a full 60 seconds without alerting the person (so they breathe naturally).",
+        "Normal adult resting rate is 12 to 20 breaths per minute.",
+        "Look for warning signs: bluish lips (cyanosis), use of neck/shoulder muscles, inability to speak full sentences, or wheezing.",
+        "Help a conscious breathless person sit upright in a comfortable supported position and call emergency services if severe."
+      ],
+      note: "Fewer than 8 or more than 30 breaths per minute in an adult is a medical emergency.",
+      ages: {
+        child: {
+          title: "Breathing Rate — Child (1–12 Years)",
+          steps: [
+            "Count chest movements for 60 seconds while the child is calm.",
+            "Normal rate is roughly 20–30 breaths/min (1–5 yrs) and 15–25 breaths/min (6–12 yrs).",
+            "Watch for sucking-in of skin between ribs or above the collarbone (retractions).",
+            "Keep the child upright with a caregiver and call EMS if breathing is labored."
+          ],
+          note: "Head bobbing or grunting sounds indicate severe respiratory distress."
+        },
+        infant: {
+          title: "Breathing Rate — Infant (Under 1 Year)",
+          steps: [
+            "Observe belly and chest rise for a full 60 seconds.",
+            "Normal infant breathing rate is 30 to 60 breaths per minute.",
+            "Check for nasal flaring, chest retractions, or pauses longer than 10 seconds.",
+            "Seek immediate emergency care for fast, noisy, or struggling breathing."
+          ],
+          note: "Brief irregular pauses under 5 seconds can be normal, but pauses over 10 seconds are dangerous."
+        }
+      }
     },
     pulse_bp: {
-      enTitle: "Pulse & Blood Pressure",
-      enSummary: "Assess pulse rate, rhythm, and perfusion signs alongside blood pressure."
+      title: "Pulse & Blood Pressure",
+      summary: "Assess heart rate, rhythm, and peripheral perfusion alongside blood pressure.",
+      steps: [
+        "Place index and middle fingers (never the thumb) on the radial artery at the thumb side of the wrist.",
+        "Count beats for 30 seconds and multiply by 2 (count full 60 seconds if irregular).",
+        "Normal adult resting pulse is 60 to 100 beats per minute; normal blood pressure is around 120/80 mmHg.",
+        "Check skin warmth and capillary refill: pale, cold, sweaty skin with a fast weak pulse signals shock."
+      ],
+      note: "In an unresponsive person, check the carotid pulse in the neck for no more than 10 seconds.",
+      ages: {
+        child: {
+          title: "Pulse & Blood Pressure — Child",
+          steps: [
+            "Check radial or carotid pulse using two fingers for 30–60 seconds.",
+            "Normal resting heart rate is higher in children: roughly 80–130 bpm (1–5 yrs) and 70–110 bpm (6–12 yrs).",
+            "Check capillary refill on a fingertip (normal is under 2 seconds).",
+            "Low blood pressure in children is a late sign of shock—act early on fast heart rate and pale skin."
+          ],
+          note: "Children maintain normal blood pressure until late in shock; monitor heart rate and skin signs closely."
+        },
+        infant: {
+          title: "Pulse — Infant (Under 1 Year)",
+          steps: [
+            "Feel the brachial pulse on the inside of the upper arm using two fingers.",
+            "Normal infant heart rate is 100 to 160 beats per minute.",
+            "If the pulse is below 60 bpm with poor perfusion, begin infant CPR immediately.",
+            "Call emergency services right away for abnormal color, lethargy, or weak pulse."
+          ],
+          note: "Use the brachial artery in infants rather than the neck (carotid) artery."
+        }
+      }
     },
     choking: {
-      enTitle: "Choking & Airway Obstruction",
-      enSummary: "Immediate response for partial or complete airway blockage in adults, children, and infants."
+      title: "Choking & Airway Obstruction",
+      summary: "Immediate steps for partial or complete airway blockage across adults, children, and infants.",
+      steps: [
+        "Ask 'Are you choking?' If the person can speak, cough forcefully, or breathe, encourage them to keep coughing.",
+        "If they cannot speak, cough, or breathe: stand slightly behind them, lean them forward, and give 5 sharp back blows between the shoulder blades.",
+        "If the object does not clear: stand behind them, place a fist just above the navel, grasp it with your other hand, and give 5 inward-and-upward abdominal thrusts.",
+        "Alternate 5 back blows and 5 abdominal thrusts until the airway clears.",
+        "If the person becomes unresponsive: lower them gently to the floor, call EMS immediately, and begin CPR (checking the mouth before rescue breaths)."
+      ],
+      note: "Anyone who receives abdominal thrusts should be evaluated by a doctor afterward.",
+      ages: {
+        child: {
+          title: "Choking First Aid — Child (1–12 Years)",
+          steps: [
+            "Encourage coughing if the child is coughing effectively.",
+            "If unable to breathe or speak: kneel behind the child, lean them forward, and deliver 5 firm back blows between the shoulder blades.",
+            "If still obstructed: perform 5 gentle-but-firm abdominal thrusts just above the navel.",
+            "Alternate 5 back blows and 5 abdominal thrusts until the object comes out, and call EMS."
+          ],
+          note: "Adjust your force to the child's size; never perform blind finger sweeps in the mouth."
+        },
+        infant: {
+          title: "Choking First Aid — Infant (Under 1 Year)",
+          steps: [
+            "Never perform abdominal thrusts on an infant.",
+            "Lay the infant face-down along your forearm with the head lower than the chest, supporting the jaw, and give 5 firm back blows with the heel of your hand.",
+            "Turn the infant face-up on your other forearm and give 5 chest thrusts in the center of the breastbone using two fingers.",
+            "Alternate 5 back blows and 5 chest thrusts until the object is expelled or EMS arrives."
+          ],
+          note: "Abdominal thrusts can injure an infant's liver—use chest thrusts only."
+        }
+      }
     },
     bleeding: {
-      enTitle: "Severe Bleeding & Wounds",
-      enSummary: "Direct pressure, wound dressing, and limb elevation to stop blood loss."
+      title: "Severe Bleeding & Wounds",
+      summary: "Direct pressure, wound dressing, and elevation to stop severe blood loss.",
+      steps: [
+        "Protect yourself with gloves or a clean barrier and have the injured person lie down.",
+        "Place sterile gauze or a clean thick cloth directly over the wound and press firmly with both hands for at least 10 minutes.",
+        "Raise the injured arm or leg above heart level if no fracture is suspected.",
+        "If blood soaks through, place another dressing on top—never remove the original cloth.",
+        "Secure with a firm pressure bandage and call emergency services immediately for heavy bleeding."
+      ],
+      note: "If an object is embedded in the wound, do NOT remove it; pad around its edges and press on either side.",
+      ages: {
+        child: {
+          title: "Severe Bleeding — Child",
+          steps: [
+            "Keep the child calm and lying flat while applying direct pressure with clean gauze.",
+            "Maintain continuous pressure for 10 minutes without peeking.",
+            "Elevate the injured limb gently and cover the child to prevent heat loss.",
+            "Call EMS immediately because children have a smaller total blood volume."
+          ],
+          note: "Even moderate blood loss in a child can quickly cause shock."
+        },
+        elderly: {
+          title: "Severe Bleeding — Elderly Adult",
+          steps: [
+            "Apply immediate firm direct pressure for at least 10–15 minutes.",
+            "Ask if the person takes blood thinners (anticoagulants or aspirin), which prolong bleeding.",
+            "Elevate the limb if safe and monitor closely for dizziness or pale skin.",
+            "Seek urgent medical care even for wounds that appear modest."
+          ],
+          note: "Anticoagulant medications significantly increase bleeding risk from minor cuts or bumps."
+        }
+      }
     },
     unconscious: {
-      enTitle: "Unconsciousness & Recovery Position",
-      enSummary: "Airway protection and recovery position for an unresponsive person who is breathing."
+      title: "Unconsciousness & Recovery Position",
+      summary: "Airway protection and recovery position for an unresponsive person who is breathing normally.",
+      steps: [
+        "Check responsiveness by tapping the shoulders and shouting loudly.",
+        "If unresponsive, call emergency services immediately.",
+        "Open the airway (head-tilt, chin-lift) and check normal breathing for up to 10 seconds.",
+        "If breathing normally: place the near arm at a right angle, bring the far hand to the near cheek, bend the far knee, and roll the person smoothly onto their side.",
+        "Tilt the head slightly back with the mouth angled downward so fluids drain, and monitor breathing every minute."
+      ],
+      note: "If spinal injury is suspected, avoid unnecessary movement unless the airway is blocked by vomit or fluids.",
+      ages: {
+        child: {
+          title: "Recovery Position — Child",
+          steps: [
+            "Confirm unresponsiveness and normal breathing over 10 seconds.",
+            "Roll the child gently onto their side with the top knee bent for stability.",
+            "Tilt the head slightly back to keep the airway open and mouth angled downward.",
+            "Stay with the child and recheck breathing continuously until EMS arrives."
+          ],
+          note: "Never leave an unconscious child unattended."
+        },
+        infant: {
+          title: "Recovery Position — Infant (Under 1 Year)",
+          steps: [
+            "Confirm the infant is unresponsive but breathing normally.",
+            "Hold the infant on their side in your arms with the head tilted slightly downward (lower than the body) so fluids drain.",
+            "Support the head and neck carefully without flexing the chin onto the chest.",
+            "Monitor breathing and skin color continuously until medical help arrives."
+          ],
+          note: "Infants cannot stay safely in a floor recovery position alone—cradle them on their side."
+        }
+      }
     },
     cpr: {
-      enTitle: "Cardiopulmonary Resuscitation (CPR)",
-      enSummary: "Chest compressions and rescue breaths when a person is unresponsive and not breathing normally."
+      title: "Cardiopulmonary Resuscitation (CPR)",
+      summary: "High-quality chest compressions and rescue breaths for cardiac arrest.",
+      steps: [
+        "Verify scene safety, tap shoulders, and shout; if unresponsive, call EMS and send for an AED.",
+        "Check breathing for no more than 10 seconds; if not breathing normally, start CPR immediately.",
+        "Place the heel of one hand on the center of the chest with the other hand interlocked on top.",
+        "Give 30 chest compressions 5–6 cm deep at a rate of 100–120 compressions per minute, allowing full chest recoil.",
+        "Give 2 rescue breaths (1 second each) after every 30 compressions and continue until EMS arrives or an AED prompts you."
+      ],
+      note: "If untrained or unable to give rescue breaths, perform continuous hands-only chest compressions.",
+      ages: {
+        child: {
+          title: "CPR — Child (1–12 Years)",
+          steps: [
+            "Check responsiveness and breathing (10 seconds); call EMS immediately.",
+            "Use the heel of one hand (or two hands for a larger child) on the center of the chest.",
+            "Compress about 5 cm (one-third of chest depth) for 30 compressions at 100–120/min.",
+            "Give 2 gentle rescue breaths (1 second each) and repeat 30:2 cycles without interruption."
+          ],
+          note: "Rescue breaths are especially important in children because cardiac arrest often follows breathing problems."
+        },
+        infant: {
+          title: "CPR — Infant (Under 1 Year)",
+          steps: [
+            "Tap the bottom of the infant's foot and check breathing for 10 seconds; call EMS immediately.",
+            "Place two fingers in the center of the chest just below the nipple line.",
+            "Give 30 gentle-but-firm compressions about 4 cm deep (one-third of chest depth) at 100–120/min.",
+            "Cover both the infant's mouth and nose with your mouth and give 2 small puffs (1 second each), repeating 30:2 cycles."
+          ],
+          note: "Do not tilt an infant's head far back; keep the airway in a neutral position."
+        }
+      }
     },
     burns: {
-      enTitle: "Burns First Aid",
-      enSummary: "Cool running water and safe dressing for thermal, electrical, or chemical burns."
+      title: "Burns First Aid",
+      summary: "Immediate cooling with running water and safe sterile covering for thermal burns.",
+      steps: [
+        "Move the person away from the heat, flame, or electrical source safely.",
+        "Cool the burn under cool (not ice-cold) running tap water for a full 20 minutes.",
+        "Gently remove rings, watches, or tight clothing near the burn before swelling starts; never peel stuck clothing.",
+        "Cover loosely with sterile non-stick gauze or clean plastic cling film.",
+        "Seek urgent medical care if the burn is larger than the person's palm, deep, or on the face, hands, feet, or joints."
+      ],
+      note: "Never apply ice, butter, oil, toothpaste, or creams, and never pop blisters.",
+      ages: {
+        child: {
+          title: "Burns First Aid — Child",
+          steps: [
+            "Cool the burn under cool running water for 20 minutes while keeping the rest of the child's body warm.",
+            "Remove wet hot clothing and diapers quickly unless stuck to the skin.",
+            "Cover loosely with clean cling film or sterile non-stick dressing.",
+            "Take any child with a significant burn to the hospital immediately."
+          ],
+          note: "Children lose body heat quickly during cooling—warm the unburned body with a blanket."
+        },
+        elderly: {
+          title: "Burns First Aid — Elderly Adult",
+          steps: [
+            "Cool the burn with cool running water for 20 minutes.",
+            "Remove rings and watches early before swelling occurs.",
+            "Cover with sterile non-stick gauze and keep the person warm.",
+            "Seek prompt medical evaluation, as thinner skin in older adults heals more slowly."
+          ],
+          note: "Even smaller burns in older adults carry higher risk of infection and fluid loss."
+        }
+      }
     }
   }
 };
 
 function getSectionTitle(sec) {
-  const lang = safeGetLang();
-  if (lang === "en") {
-    const map = LIBRARY_TRANSLATIONS.sections[sec.id];
-    if (map && map.enTitle) return map.enTitle;
-    if (sec.titleEn) return sec.titleEn;
+  if (safeGetLang() === "en") {
+    const entry = LIBRARY_EN.sections[sec.id];
+    if (entry && entry.title) return entry.title;
   }
   return sec.title || "";
 }
 
 function getSectionIntro(sec) {
-  const lang = safeGetLang();
-  if (lang === "en") {
-    const map = LIBRARY_TRANSLATIONS.sections[sec.id];
-    if (map && map.enIntro) return map.enIntro;
-    if (sec.introEn) return sec.introEn;
+  if (safeGetLang() === "en") {
+    const entry = LIBRARY_EN.sections[sec.id];
+    if (entry && entry.intro) return entry.intro;
   }
   return sec.intro || sec.summary || "";
 }
 
-function getTopicTitle(tp) {
-  const lang = safeGetLang();
-  if (lang === "en") {
-    const map = LIBRARY_TRANSLATIONS.topics[tp.id];
-    if (map && map.enTitle) return map.enTitle;
-    if (tp.titleEn) return tp.titleEn;
-  }
-  return tp.title || "";
-}
-
-function getTopicSummary(tp) {
-  const lang = safeGetLang();
-  if (lang === "en") {
-    const map = LIBRARY_TRANSLATIONS.topics[tp.id];
-    if (map && map.enSummary) return map.enSummary;
-    if (tp.summaryEn) return tp.summaryEn;
-  }
-  return tp.summary || tp.intro || "";
+function getTopicLocalized(topic) {
+  const en = safeGetLang() === "en";
+  const enEntry = en ? LIBRARY_EN.topics[topic.id] : null;
+  return {
+    title: (enEntry && enEntry.title) || topic.title || "",
+    summary: (enEntry && enEntry.summary) || topic.summary || topic.intro || "",
+    steps: (enEntry && Array.isArray(enEntry.steps) && enEntry.steps.length ? enEntry.steps : topic.steps) || [],
+    note: (enEntry && enEntry.note) || topic.note || "",
+    agesEn: (enEntry && enEntry.ages) || {}
+  };
 }
 
 const MEDIA_MAP = {
@@ -510,8 +783,7 @@ function buildMediaCard(media, useArabic) {
 }
 
 function ensureCompleteSteps(analysis, userText) {
-  const lang = safeGetLang();
-  const useAr = lang === "ar";
+  const useAr = safeGetLang() === "ar";
   const matched = matchMediaForText(userText);
   const out = Object.assign(
     {
@@ -768,15 +1040,14 @@ function showSection(id) {
   const secIntro = getSectionIntro(sec);
   const grid = make("div", "grid");
   (sec.topics || []).forEach(function (tp) {
+    const loc = getTopicLocalized(tp);
     const c = make("a", "card");
     c.href = "#topic/" + tp.id;
     const mediaKey = tp.gallery !== undefined ? LIBRARY_GALLERY_KEYS[tp.gallery] : "unresponsive";
     const media = MEDIA_MAP[mediaKey] || MEDIA_MAP.cpr;
-    const tTitle = getTopicTitle(tp);
-    const tSummary = getTopicSummary(tp);
     const img = make("img", "card-cover");
-    setSmartImage(img, media, tTitle);
-    c.append(img, make("h2", "", tTitle), make("p", "", tSummary));
+    setSmartImage(img, media, loc.title);
+    c.append(img, make("h2", "", loc.title), make("p", "", loc.summary));
     grid.append(c);
   });
   const back = make("a", "back", safeT("backLib"));
@@ -789,6 +1060,8 @@ function showTopic(id) {
   if (!topic) return showLibrary();
   const lang = safeGetLang();
   const en = lang === "en";
+  const loc = getTopicLocalized(topic);
+
   const back = make("a", "back", safeT("backSec"));
   back.href = "#section/" + topic.section;
   const tabsRow = make("div");
@@ -798,20 +1071,24 @@ function showTopic(id) {
   const tabs = [{
     key: "adult",
     label: AGE_LABELS.adult[lang] || "البالغ",
-    title: getTopicTitle(topic),
-    steps: topic.steps,
-    note: topic.note,
+    title: loc.title,
+    steps: loc.steps,
+    note: loc.note,
     art: topic.gallery
   }];
 
   Object.keys(topic.ages || {}).forEach(function (key) {
-    const ageObj = topic.ages[key] || {};
+    const ageAr = topic.ages[key] || {};
+    const ageEn = loc.agesEn[key] || {};
     const ageLabel = AGE_LABELS[key] ? AGE_LABELS[key][lang] : key;
-    tabs.push(Object.assign({
+    tabs.push({
       key: key,
       label: ageLabel,
-      title: en && ageObj.titleEn ? ageObj.titleEn : (ageObj.title || getTopicTitle(topic))
-    }, ageObj));
+      title: (en && ageEn.title) ? ageEn.title : (ageAr.title || loc.title),
+      steps: (en && Array.isArray(ageEn.steps) && ageEn.steps.length) ? ageEn.steps : (ageAr.steps || loc.steps),
+      note: (en && ageEn.note) ? ageEn.note : (ageAr.note || ""),
+      art: ageAr.art !== undefined ? ageAr.art : topic.gallery
+    });
   });
 
   const buttons = tabs.map(function (tab) {
@@ -828,11 +1105,8 @@ function showTopic(id) {
     active.style.color = "var(--on-blue)";
     body.replaceChildren();
 
-    const stepList = en && Array.isArray(tab.stepsEn) && tab.stepsEn.length ? tab.stepsEn : (tab.steps || []);
-    const noteText = en && tab.noteEn ? tab.noteEn : tab.note;
-
-    body.append(make("h2", "", tab.title), orderedListOf(stepList));
-    if (noteText) body.append(make("p", "notice", noteText));
+    body.append(make("h2", "", tab.title), orderedListOf(tab.steps));
+    if (tab.note) body.append(make("p", "notice", tab.note));
 
     const mediaKey = tab.art !== undefined && tab.art !== null
       ? LIBRARY_GALLERY_KEYS[tab.art]
@@ -842,7 +1116,7 @@ function showTopic(id) {
   }
   show(tabs[0], buttons[0]);
 
-  render(back, make("h1", "", getTopicTitle(topic)), make("p", "", getTopicSummary(topic)), tabsRow, body, safetyNotice());
+  render(back, make("h1", "", loc.title), make("p", "", loc.summary), tabsRow, body, safetyNotice());
 }
 
 function syncChromeTexts() {
